@@ -1,4 +1,7 @@
 #include "encoder.hpp"
+#include "position.hpp"
+
+positionData_t position = {0, 0 ,0};
 
 void setup() {
   encoderSetup();
@@ -6,6 +9,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.print(countsToRadians(readEncoder(LEFT)));
+  position = updatePosition(position);
+  Serial.print(position.phi);
   delay(100);
 }

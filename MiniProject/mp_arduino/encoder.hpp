@@ -5,12 +5,18 @@
  Repository:
  https://github.com/PaulStoffregen/Encoder/blob/master/Encoder.h
  */
+#ifnef ENCODER_HPP
+#define ENCODER_HPP
 
 #include <Arduino.h>
+
+#ifnef MACRO_DEFAULTS
+#define MACRO_DEFAULTS
 #define LEFT 0
 #define RIGHT 1
 #define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel
 #define WIDTH_OF_WHEELBASE 0.3683 // NOTE: we need wheelbase width to calculate angle
+#endif
 
 void encoderSetup();
 void updateEncoder();
@@ -96,3 +102,5 @@ float countsToDistance(long counts) {
 // this is an easy workaround
 void updateLeftEncoder() { updateEncoder(LEFT); }
 void updateRightEncoder() { updateEncoder(RIGHT); }
+
+#endif
