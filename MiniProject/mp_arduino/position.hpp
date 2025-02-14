@@ -1,10 +1,11 @@
-#ifnef POSITION_HPP
+#ifndef POSITION_HPP
 #define POSITION_HPP
 
 #include <Arduino.h>
-#include "encoder.hpp"
+#include "encoder.hpp" // able to read from encoders directly
+// but only if you use the second overload and not the first
 
-#ifnef MACRO_DEFAULTS
+#ifndef MACRO_DEFAULTS
 #define MACRO_DEFAULTS
 #define LEFT 0
 #define RIGHT 1
@@ -21,6 +22,7 @@ struct positionData_t {
 positionData_t updatePosition(positionData_t, float, float);
 positionData_t updatePosition(positionData_t);
 
+positionData_t position = {0, 0 ,0};
 float previousDistance[] = {0, 0};
 
 positionData_t updatePosition(positionData_t oldPosition, float deltaPosLeft, float deltaPosRight) {
@@ -41,7 +43,7 @@ positionData_t updatePosition(positionData_t oldPosition) {
   newPosition.y = oldPosition.y + sin(oldPosition.phi)*(deltaPosLeft+deltaPosRight)/2.0;
   newPosition.phi = oldPosition.phi + (deltaPosLeft-deltaPosRight)/WIDTH_OF_WHEELBASE;
   previousDistance[LEFT] = countsToDistance(readEncoder(LEFT));
-  previousDistance[RIGHT] = countsToDistance(readEncoder(RIGHT))
+  previousDistance[RIGHT] = countsToDistance(readEncoder(RIGHT));
   return newPosition; // return struct to contain all 3 variables
 }
 

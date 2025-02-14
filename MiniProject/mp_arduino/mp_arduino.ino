@@ -1,7 +1,6 @@
 #include "encoder.hpp"
 #include "position.hpp"
-
-positionData_t position = {0, 0 ,0};
+#include "pid_movement.hpp"
 
 void setup() {
   encoderSetup();

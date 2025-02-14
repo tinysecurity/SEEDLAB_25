@@ -5,12 +5,12 @@
  Repository:
  https://github.com/PaulStoffregen/Encoder/blob/master/Encoder.h
  */
-#ifnef ENCODER_HPP
+#ifndef ENCODER_HPP
 #define ENCODER_HPP
 
 #include <Arduino.h>
 
-#ifnef MACRO_DEFAULTS
+#ifndef MACRO_DEFAULTS
 #define MACRO_DEFAULTS
 #define LEFT 0
 #define RIGHT 1
