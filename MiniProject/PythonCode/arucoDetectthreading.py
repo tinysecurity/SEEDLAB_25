@@ -6,7 +6,12 @@ import numpy as np
 import cv2
 from cv2 import aruco
 from smbus2 import SMBus
+import threading
+from multiprocessing import Process
 
+from random import random
+
+q = queue.Queue()
 #lcd_columns = 16
 #lcd_rows = 2
 
@@ -14,11 +19,17 @@ from smbus2 import SMBus
 
 #lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns,lcd_rows)
 
+
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6)
 camera = cv2.VideoCapture(0)
 sleep(0.5)
+def runVision(camera, aruco_dict):
+	#move/write the code to be threaded here
+
 
 while(True)
+	#move contents into runVision
+	#turn this into the thread 
 	#lcd.clear()
 	#lcd.color = [0,100,0]
 	ret, image = camera.read()
