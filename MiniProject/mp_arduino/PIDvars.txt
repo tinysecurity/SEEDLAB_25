@@ -1,0 +1,5 @@
+Variable, Left, Right
+KpSpeed, 2.9, 2.9
+KpPos, 24.659, 25.590
+KiPos, 106.106, 115.247
+batteryVoltage, 8.46, 8.46
