@@ -1,7 +1,7 @@
-import time
+import time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
 from time import sleep
 import board
-#import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
+import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import numpy as np
 import cv2
 from cv2 import aruco
@@ -20,6 +20,7 @@ lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns,lcd_rows)
 def showLCD():
 	while(True):
 		if not q.empty():
+			val = q.get()
 			print(val)
 			lcd.message = val
 			sleep(0.25)
@@ -44,6 +45,7 @@ if __name__=='__main__':
 			for (outline, id) in zip(corners,ids):
 				markerCorners = outline.reshape((4,2))
 			overlay = cv2.putText(overlay, str(id),(int(markerCorners[0,0]), int(markerCorners[0,1]) - 15),cv2.FONT_HERSHEY_SIMPLEX,0.5, (255,0,0),2)
+
 			val =  str(id)
 			q.put(val)
 			cv2.imshow("overlay",overlay)
@@ -55,7 +57,7 @@ if __name__=='__main__':
 			q.put(-1)
 			time.sleep(.25)
 
-		p = Process(target=showLCD, args=())
+		p = Process(target=showLCD)
 		p.start()
 		p.join()
 		if cv2.waitKey(33) == ord('q'):
