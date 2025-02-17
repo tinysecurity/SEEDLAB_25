@@ -4,10 +4,10 @@
 #include "pid_movement.hpp"
 
 enum motorState_t: uint8_t {
-  NorthEast = 0b00000000,
-  NorthWest = 0b00000001,
-  SouthWest = 0b00000011,
-  SouthEast = 0b00000010
+  NorthEast = 0,
+  NorthWest = 1,
+  SouthWest = 3,
+  SouthEast = 2
 };
 
 const uint8_t i2cAddress = 8;
@@ -40,8 +40,16 @@ void setup() {
 
 void loop() {
   if (msgLength > 0) {
-    motorState = instruction[offset];
+    motorState = instruction[0];
     msgLength = 0;
+    Serial.print("We are in the ");
+    switch (motorState) {
+      case NorthEast: Serial.print("NE (0)"); break;
+      case NorthWest: Serial.print("NW (1)"); break;
+      case SouthWest: Serial.print("SW (3)"); break;
+      case SouthEast: Serial.print("SE (2)"); break;
+    }
+    Serial.print(" quadrant :)");
   }
 
   PIDposControl(LEFT);
