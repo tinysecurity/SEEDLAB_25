@@ -52,9 +52,6 @@ void loop() {
     Serial.print(" quadrant :)\r\n");
   }
 
-  PIDposControl(LEFT);
-  PIDposControl(RIGHT);
-
   switch (motorState) {
     case NorthEast:
       desiredPos[LEFT] = 0;
@@ -78,6 +75,12 @@ void loop() {
       desiredPos[RIGHT] = PI*1000;
       break;
   }
+
+  currTime = (float)milis()/1000;
+  PIDposControl(LEFT);
+  PIDposControl(RIGHT);
+  prevTime = currTime;
+  delay(5);
 }
 
 void receive() {
