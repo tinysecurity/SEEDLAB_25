@@ -21,10 +21,8 @@ open_system('motor_control')
 %
 out=sim('motor_control');
 %% A Plot of the results
-RightT = readtable('stepResponseVelocityRight(in).csv', 'VariableNamingRule', 'preserve');
-LeftT = readtable('stepResponseVelocityLeft(in).csv', 'VariableNamingRule', 'preserve');
-positionData = readtable('posStepData.csv');
 
+positionData = readtable('posStepData.csv');
 
 figure(1)
 subplot(2,1,1)
@@ -43,7 +41,7 @@ hold on
 % change
 plot(DesiredPosition,'--','linewidth',2)
 
-plot(LeftT{:,3},LeftT{:,5},'linewidth',2)
+plot(positionData{:,3},positionData{:,5},'linewidth',2)
 hold off
 legend('Simulated', 'Desired','Experimental','location' ,'southeast')
 xlabel('Time (s)')
