@@ -93,27 +93,39 @@ while (True):
             if centerX <= 320 and centerY <= 240:
                 tempQuadrant = "01"
                 #write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,1)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,1)
 	    #checking that center point is in NE
             if centerX > 320 and centerY < 240:
                 tempQuadrant = "00"
 		#write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,0)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,0)
 	    #checking that center point is in SW
             if centerX < 320 and centerY > 240:
                 tempQuadrant = "11"
 		#write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,3)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,3)
 	    #checking that center point is in SE
             if centerX > 320 and centerY > 240:
                 tempQuadrant = "10"
 		#write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,2)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,2)
             
         #send it to the thread if aruco marker moved:
         if tempQuadrant is not quadrant:
             quadrant = tempQuadrant
             q.put(quadrant)
+            if quadrant == "01":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,1)
+            elif quadrant == "00":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,0)
+            elif quadrant == "11":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,3)
+            elif quadrant == "10":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,2)
 
         cv2.imshow("overlay",overlay)
         time.sleep(.0005)
