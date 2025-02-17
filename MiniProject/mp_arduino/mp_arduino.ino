@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include "encoder.hpp"
 #include "position.hpp"
 #include "pid_movement.hpp"
@@ -27,10 +28,13 @@ void setup() {
   digitalWrite(motorEnable, HIGH);
   digitalWrite(motorDirection[LEFT], HIGH);
   digitalWrite(motorDirection[RIGHT], HIGH);
+
+  // ---------- I2C ----------
+  Wire.begin();
 }
 
 void loop() {
-  motorState = motorState; // TODO: Integrate with pi
+  motorState = Wire.read(); // TODO: Integrate with pi
 
   PIDposControl(LEFT);
   PIDposControl(RIGHT);
@@ -39,18 +43,22 @@ void loop() {
     case NorthEast:
       desiredPos[LEFT] = 0;
       desiredPos[RIGHT] = 0;
+      Serial.println("Moving North-East");
       break;
     case NorthWest:
       desiredPos[LEFT] = 0;
       desiredPos[RIGHT] = PI;
+      Serial.println("Moving North-West");
       break;
     case SouthWest:
       desiredPos[LEFT] = PI;
       desiredPos[RIGHT] = PI;
+      Serial.println("Moving South-West");
       break;
     case SouthEast:
       desiredPos[LEFT] = PI;
       desiredPos[RIGHT] = 0;
+      Serial.println("Moving South-East");
       break;
     default:
       // YOU MESSED UP
