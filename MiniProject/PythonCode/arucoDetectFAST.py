@@ -8,7 +8,7 @@ from cv2 import aruco
 from smbus2 import SMBus
 from multiprocessing import Process
 import queue
-val = 0
+val = 0;
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
 camera = cv2.VideoCapture(0)
 sleep(0.5)
@@ -31,8 +31,11 @@ if __name__=='__main__':
 		lcd.clear()
 		lcd.color = [0,100,0]
 		ret, image = camera.read()
+		if cv2.waitKey(33) == ord('q'):
+			break
 		if not ret:
 			print("Cannot receive Frame. Exiting...")
+			break
 		greyimage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		cv2.imshow("overlay", greyimage)
 		corners,ids,rejected = aruco.detectMarkers(greyimage,aruco_dict)
@@ -42,7 +45,7 @@ if __name__=='__main__':
 			ids = ids.flatten()
 			for (outline, id) in zip(corners,ids):
 				markerCorners = outline.reshape((4,2))
-			overlay = cv2.putText(overlay, str(id),(int(markerCorners[0,0]), int(markerCorners[0,1]) - 15),cv2.FONT_HERSHEY_SIMPLEX,0.5, (255,0,0),2)
+				overlay = cv2.putText(overlay, str(id),(int(markerCorners[0,0]), int(markerCorners[0,1]) - 15),cv2.FONT_HERSHEY_SIMPLEX,0.5, (255,0,0),2)
 
 			val =  str(id)
 			q.put(val)
@@ -54,10 +57,6 @@ if __name__=='__main__':
 			print("No Markers found")
 			q.put(-1)
 			time.sleep(.25)
-
-
-		if cv2.waitKey(33) == ord('q'):
-			break
 	p = Process(target=showLCD)
 	p.start()
 	p.join()
