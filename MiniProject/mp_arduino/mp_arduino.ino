@@ -10,7 +10,11 @@ enum motorState_t: uint8_t {
   SouthEast = 0b00000010
 };
 
+const uint8_t i2cAddress = 8;
 motorState_t motorState = NorthEast;
+volatile uint8_t offset;
+volatile uint8_t msgLength = 0;
+volatile uint8_t instruction[32] = {0};
 
 void setup() {
   Serial.begin(9600);
@@ -30,11 +34,15 @@ void setup() {
   digitalWrite(motorDirection[RIGHT], HIGH);
 
   // ---------- I2C ----------
-  Wire.begin();
+  Wire.begin(i2cAddress);
+  Wire.onReceive(receive);
 }
 
 void loop() {
-  motorState = Wire.read(); // TODO: Integrate with pi
+  if (msgLength > 0) {
+    motorState = instruction[offset];
+    msgLength = 0;
+  }
 
   PIDposControl(LEFT);
   PIDposControl(RIGHT);
@@ -65,5 +73,17 @@ void loop() {
       desiredPos[LEFT] = PI*1000;
       desiredPos[RIGHT] = PI*1000;
       break;
+  }
+}
+
+void receive() {
+  // Set the offset, this will always be the first byte.
+  offset = Wire.read();
+
+  // If there is information after the offset, it is telling us more about the command.
+  while (Wire.available()) {
+    instruction[msgLength] = Wire.read();
+    msgLength++;
+    //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
   }
 }
