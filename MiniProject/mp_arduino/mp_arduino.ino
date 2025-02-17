@@ -49,7 +49,7 @@ void loop() {
       case SouthWest: Serial.print("SW (3)"); break;
       case SouthEast: Serial.print("SE (2)"); break;
     }
-    Serial.print(" quadrant :)");
+    Serial.print(" quadrant :)\r\n");
   }
 
   PIDposControl(LEFT);
@@ -59,22 +59,18 @@ void loop() {
     case NorthEast:
       desiredPos[LEFT] = 0;
       desiredPos[RIGHT] = 0;
-      Serial.println("Moving North-East");
       break;
     case NorthWest:
       desiredPos[LEFT] = 0;
       desiredPos[RIGHT] = PI;
-      Serial.println("Moving North-West");
       break;
     case SouthWest:
       desiredPos[LEFT] = PI;
       desiredPos[RIGHT] = PI;
-      Serial.println("Moving South-West");
       break;
     case SouthEast:
       desiredPos[LEFT] = PI;
       desiredPos[RIGHT] = 0;
-      Serial.println("Moving South-East");
       break;
     default:
       // YOU MESSED UP
