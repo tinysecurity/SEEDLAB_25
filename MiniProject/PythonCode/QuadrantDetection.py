@@ -73,12 +73,14 @@ while (True):
         quit() #quitting program if we can not find image
         break
     greyimage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
+    greyimage = cv2.line(greyimage,[320,0],[320,480], (255,0,0),4)
+    greyimage = cv2.line(greyimage,[0,240],[640,240], (0,255,0),4)
     cv2.imshow("overlay", greyimage) #showing grey image
 
     #---------marker detection-------------
     corners,ids,rejected = aruco.detectMarkers(greyimage,aruco_dict)
-    overlay = cv2.cvtColor(greyimage,cv2.COLOR_GRAY2RGB)
-    overlay = aruco.drawDetectedMarkers(overlay,corners,borderColor = 4) #outline on GUI
+    overlay = aruco.drawDetectedMarkers(greyimage,corners,borderColor = 4) #outline on GUI
+
     if ids is not None:
         ids = ids.flatten()
         for (outline,id) in zip(corners,ids):

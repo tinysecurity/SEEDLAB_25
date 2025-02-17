@@ -76,7 +76,7 @@ void loop() {
       break;
   }
 
-  currTime = (float)milis()/1000;
+  currTime = (float)millis()/1000;
   PIDposControl(LEFT);
   PIDposControl(RIGHT);
   prevTime = currTime;
