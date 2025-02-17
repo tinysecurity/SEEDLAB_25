@@ -6,18 +6,19 @@ import numpy as np
 import cv2
 from cv2 import aruco
 from smbus2 import SMBus
-from multiprocessing import Process
+impoer threading
 import queue
 val = 0
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
 camera = cv2.VideoCapture(0)
 sleep(0.5)
 q = queue.Queue()
-lcd_columns = 16
-lcd_rows = 2
-i2c = board.I2C()
-lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns,lcd_rows)
+
 def showLCD():
+	lcd_columns = 16
+	lcd_rows = 2
+	i2c = board.I2C()
+	lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns,lcd_rows)
 	while(True):
 		if not q.empty():
 			val = q.get()
@@ -26,7 +27,11 @@ def showLCD():
 			sleep(0.25)
 			lcd.clear()
 
-if __name__=='__main__':
+	p = threading.Thread(target=showLCD, args=())
+
+if __name__ == "__main__":
+	p = threading.Thread(target=showLCD,args=())
+	p.start()
 	while(True):
 		lcd.clear()
 		lcd.color = [0,100,0]
@@ -55,14 +60,13 @@ if __name__=='__main__':
 			q.put(-1)
 			time.sleep(.25)
 
-
+		
 		if cv2.waitKey(33) == ord('q'):
 			break
-	p = Process(target=showLCD)
-	p.start()
-	p.join()
-
-camera.release()
-cv2.destroyAllWindows()
-lcd.color = [0,0,0]
-lcd.clear()
+		
+	
+        p.stop()
+	camera.release()
+	cv2.destroyAllWindows()
+	lcd.color = [0,0,0]
+	lcd.clear()
