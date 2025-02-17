@@ -1,4 +1,4 @@
-import time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
+import time
 from time import sleep
 import board
 import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
@@ -27,11 +27,9 @@ def showLCD():
 			lcd.clear()
 
 if __name__=='__main__':
-
-	
 	while(True):
 		lcd.clear()
-        	lcd.color = [0,100,0]
+		lcd.color = [0,100,0]
 		ret, image = camera.read()
 		if not ret:
 			print("Cannot receive Frame. Exiting...")
@@ -57,11 +55,12 @@ if __name__=='__main__':
 			q.put(-1)
 			time.sleep(.25)
 
-		p = Process(target=showLCD)
-		p.start()
-		p.join()
+
 		if cv2.waitKey(33) == ord('q'):
 			break
+	p = Process(target=showLCD)
+	p.start()
+	p.join()
 
 camera.release()
 cv2.destroyAllWindows()
