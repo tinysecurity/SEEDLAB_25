@@ -22,13 +22,13 @@ open_system('motor_control')
 out=sim('motor_control');
 %% A Plot of the results
 
-positionData = readtable('posStepData.csv');
+positionData = readtable('posStepData.csv','VariableNamingRule', 'preserve');
 
 figure(1)
 subplot(2,1,1)
 plot(Voltage,'--','linewidth',2)
 hold on
-plot(positionData{:,3},positionData{:,5},'linewidth',2)
+plot(positionData{:,1},positionData{:,3},'linewidth',2)
 legend('Simulated','Experimental','location','southeast')
 hold off
 xlabel('Time (s)')
@@ -41,7 +41,7 @@ hold on
 % change
 plot(DesiredPosition,'--','linewidth',2)
 
-plot(positionData{:,3},positionData{:,5},'linewidth',2)
+plot(positionData{:,1},positionData{:,3},'linewidth',2)
 hold off
 legend('Simulated', 'Desired','Experimental','location' ,'southeast')
 xlabel('Time (s)')
