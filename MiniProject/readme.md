@@ -3,7 +3,7 @@ Mini Project
 
 arucoDetect folder:
 
-This is a temp folder that we may delete later
+This folder is used for testing the Aruco codes
 
 
 MATLAB folder:
@@ -18,4 +18,4 @@ This folder contains all of our Arduino code for the robot. These files are brok
 
 PythonCode folder:
 
-This folder contains all of our Python code that we run on the Pi.
+This folder contains all of our Python code that we run on the Pi. We have several test files here along with our main file for running the python code. 
