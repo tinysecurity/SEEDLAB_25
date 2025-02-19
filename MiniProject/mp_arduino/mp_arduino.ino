@@ -1,3 +1,13 @@
+#ifndef MACRO_DEFAULTS
+#define MACRO_DEFAULTS
+#define LEFT 0
+#define RIGHT 1
+#define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel
+#define WIDTH_OF_WHEELBASE 0.3683 // NOTE: we need wheelbase width to calculate angle
+#endif
+
+
+
 #include <Wire.h>
 #include "encoder.hpp"
 #include "position.hpp"
