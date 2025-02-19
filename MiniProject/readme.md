@@ -1,14 +1,14 @@
 Mini Project
 
 
-arucoDetect folder:
+TestingCode folder:
 
-This folder is used for testing the Aruco codes
+This folder is used to store code we used for testing.
 
 
 MATLAB folder:
 
-This folder contains all of our MATLAB files. RunPIDSimulink runs the simulink model for our system, which we used to create the PI controller for our robot. 
+This folder contains all of our MATLAB files. RunPIDSimulink runs the simulink model for our system, which we used to create the PI controller for our robot.
 
 
 mp_arduino folder:
@@ -18,4 +18,4 @@ This folder contains all of our Arduino code for the robot. These files are brok
 
 PythonCode folder:
 
-This folder contains all of our Python code that we run on the Pi. We have several test files here along with our main file for running the python code. 
+This folder contains our Python code that we run on the Pi. QuadrantDetection.py detects which quadrant a ArUco marker is in, and then sends this information over to the Arduino.
