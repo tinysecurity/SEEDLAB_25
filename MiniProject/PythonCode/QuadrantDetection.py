@@ -73,12 +73,14 @@ while (True):
         quit() #quitting program if we can not find image
         break
     greyimage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
+    greyimage = cv2.line(greyimage,[320,0],[320,480], (255,0,0),4)
+    greyimage = cv2.line(greyimage,[0,240],[640,240], (0,255,0),4)
     cv2.imshow("overlay", greyimage) #showing grey image
 
     #---------marker detection-------------
     corners,ids,rejected = aruco.detectMarkers(greyimage,aruco_dict)
-    overlay = cv2.cvtColor(greyimage,cv2.COLOR_GRAY2RGB)
-    overlay = aruco.drawDetectedMarkers(overlay,corners,borderColor = 4) #outline on GUI
+    overlay = aruco.drawDetectedMarkers(greyimage,corners,borderColor = 4) #outline on GUI
+
     if ids is not None:
         ids = ids.flatten()
         for (outline,id) in zip(corners,ids):
@@ -93,27 +95,39 @@ while (True):
             if centerX <= 320 and centerY <= 240:
                 tempQuadrant = "01"
                 #write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,1)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,1)
 	    #checking that center point is in NE
             if centerX > 320 and centerY < 240:
                 tempQuadrant = "00"
 		#write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,0)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,0)
 	    #checking that center point is in SW
             if centerX < 320 and centerY > 240:
                 tempQuadrant = "11"
 		#write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,3)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,3)
 	    #checking that center point is in SE
             if centerX > 320 and centerY > 240:
                 tempQuadrant = "10"
 		#write byte to the i2c bus
-                i2cArduino.write_byte_data(ARD_ADDR,offset,2)
+                #i2cArduino.write_byte_data(ARD_ADDR,offset,2)
             
         #send it to the thread if aruco marker moved:
         if tempQuadrant is not quadrant:
             quadrant = tempQuadrant
             q.put(quadrant)
+            if quadrant == "01":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,1)
+            elif quadrant == "00":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,0)
+            elif quadrant == "11":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,3)
+            elif quadrant == "10":
+                #write byte to the i2c bus
+                i2cArduino.write_byte_data(ARD_ADDR,offset,2)
 
         cv2.imshow("overlay",overlay)
         time.sleep(.0005)
