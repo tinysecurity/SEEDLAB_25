@@ -29,9 +29,9 @@ float prevTime = 0;
 float currTime = 0;
 
 // Initialize Feedback parameters
-float KpSpeed[2] = {2.9, 2.9};
-float KpPos[2] = {24.659, 25.590};
-float KiPos[2] = {106.106, 115.247};
+float KpSpeed[2] = {2.8, 2.9};
+float KpPos[2] = {25.020, 25.590};
+float KiPos[2] = {107.002, 115.247};
 float posError[2] = {0,0};
 float speedError[2] = {0,0};
 float voltage[2] = {0,0};
