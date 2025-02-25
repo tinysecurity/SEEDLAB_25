@@ -4,12 +4,12 @@
 % required file: motorsim.slx
 %
 %% Define motor parameters
-K=1.9; % DC gain [rad/Vs]
-sigma=10; % time constant reciprocal [1/s]
-Kp=2.9;
+K=1.65; % DC gain [rad/Vs]
+sigma=11; % time constant reciprocal [1/s]
+Kp=2.8;
 I = 0;
 % Right k = 1.9; Right sigma = 10; Right Kp = 2.9; Right I = 115.247491120584; Right P = 25.590311426602
-% Left k = 1.8; Left sigma = 10; Left Kp = 2.9; Left I = 106.106200650665; Left P = 24.6589999228437
+% Left k = 1.65; Left sigma = 11; Left Kp = 2.8; Left I = 107.002137763045; Left P = 25.0200707606661
 %% Run a Simulation
 %
 % open the block diagram so it appears in the documentation when published.
