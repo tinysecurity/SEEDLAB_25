@@ -13,18 +13,19 @@
 #include "position.hpp"
 #include "pid_movement.hpp"
 
-enum motorState_t: uint8_t {
-  NorthEast = 0,
-  NorthWest = 1,
-  SouthWest = 3,
-  SouthEast = 2
-};
-
 const uint8_t i2cAddress = 8;
-motorState_t motorState = NorthEast;
 volatile uint8_t offset;
 volatile uint8_t msgLength = 0;
 volatile uint8_t instruction[32] = {0};
+
+// Initialize desired position and angle
+float desiredDistance = 0;
+float desiredAngleDegrees = 0;
+
+// Initialize current values
+int currDistance = 0; // in meters
+int currAngleDegrees = 0;
+
 
 void setup() {
   Serial.begin(9600);
@@ -49,46 +50,20 @@ void setup() {
 }
 
 void loop() {
-  if (msgLength > 0) {
-    motorState = instruction[0];
-    msgLength = 0;
-    Serial.print("We are in the ");
-    switch (motorState) {
-      case NorthEast: Serial.print("NE (0)"); break;
-      case NorthWest: Serial.print("NW (1)"); break;
-      case SouthWest: Serial.print("SW (3)"); break;
-      case SouthEast: Serial.print("SE (2)"); break;
-    }
-    Serial.print(" quadrant :)\r\n");
-  }
-
-  switch (motorState) {
-    case NorthEast:
-      desiredPos[LEFT] = 0;
-      desiredPos[RIGHT] = 0;
-      break;
-    case NorthWest:
-      desiredPos[LEFT] = 0;
-      desiredPos[RIGHT] = PI;
-      break;
-    case SouthWest:
-      desiredPos[LEFT] = PI;
-      desiredPos[RIGHT] = PI;
-      break;
-    case SouthEast:
-      desiredPos[LEFT] = PI;
-      desiredPos[RIGHT] = 0;
-      break;
-    default:
-      // YOU MESSED UP
-      desiredPos[LEFT] = PI*1000;
-      desiredPos[RIGHT] = PI*1000;
-      break;
-  }
-
   currTime = (float)millis()/1000;
-  PIDposControl(LEFT);
+  currDistance = position.x;
+  if(currTime >= 5){
+    desiredDistance = 1;
+    moveStraight(desiredDistance/WHEEL_RADIUS);
+  }
+  if (currTime >= 10){
+    desiredAngleDegrees = 180;
+    desiredDistance = 0;
+    turn(desiredAngleDegrees);
+  }
   PIDposControl(RIGHT);
+  PIDposControl(LEFT);
+  updatePosition(position);
   prevTime = currTime;
   delay(5);
 }
@@ -103,4 +78,15 @@ void receive() {
     msgLength++;
     //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
   }
+}
+
+void moveStraight(float rads){
+  desiredPos[LEFT] = -rads;
+  desiredPos[RIGHT] = rads;
+}
+
+void turn(float degrees){
+  float rads = (degrees*PI)/180;
+  desiredPos[LEFT] = rads;
+  desiredPos[RIGHT] = rads;
 }

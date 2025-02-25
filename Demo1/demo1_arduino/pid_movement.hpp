@@ -43,7 +43,8 @@ float prevPos[2] = {0, 0};
 float integralError[2] = {0,0};
 
 // Initialize PWM Variables
-float batteryVoltage = 8.46;
+float batteryVoltage = 7.9;
+float maxSpeed = TWO_PI;
 unsigned int PWM = 0;
 
 float rad2AngVel(float rads1, float time1, float rads2, float time2){
@@ -65,25 +66,27 @@ void PIDposControl(bool motorChoice){
   integralError[motorChoice] = integralError[motorChoice] + posError[motorChoice]*((float)desiredTs /1000);
   // find desired speed
   desiredSpeed[motorChoice] = KpPos[motorChoice] * posError[motorChoice] + KiPos[motorChoice] * integralError[motorChoice];
+  
+  // Wind up control (keeps the motors at a maximum speed)
+  if(abs(desiredSpeed[motorChoice]) >= maxSpeed){
+    // keep the voltage at or bellow the battery voltage while keeping the sign
+    desiredSpeed[motorChoice] = maxSpeed * (desiredSpeed[motorChoice]/abs(desiredSpeed[motorChoice]));
+    // Undo the integration calculation
+    integralError[motorChoice] = integralError[motorChoice] - posError[motorChoice]*((float)desiredTs /1000);
+  }
+
   // speed controller
   speedError[motorChoice] = desiredSpeed[motorChoice] - actualSpeed[motorChoice];
+  
   // voltage output
   voltage[motorChoice] = KpSpeed[motorChoice]*speedError[motorChoice];
 
   // go backwards if negative voltage
   if(voltage[motorChoice] >= 0){
-      digitalWrite(motorDirection[motorChoice], HIGH);
+    digitalWrite(motorDirection[motorChoice], HIGH);
   }
   else {
     digitalWrite(motorDirection[motorChoice], LOW);
-  }
-
-  // Wind up control
-  if(abs(voltage[motorChoice]) >= batteryVoltage){
-    // keep the voltage at or bellow the battery voltage while keeping the sign
-    voltage[motorChoice] = batteryVoltage * (voltage[motorChoice]/abs(voltage[motorChoice]));
-    // Undo the integration calculation
-    integralError[motorChoice] = integralError[motorChoice] - posError[motorChoice]*((float)desiredTs /1000);
   }
 
   // calculate voltage PWM output
