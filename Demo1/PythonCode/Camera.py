@@ -1,41 +1,56 @@
 # Camera.py
 import cv2
 from cv2 import aruco
+from time import sleep
 
 class Camera:
     def __init__(self, cameraIndex):
-        camera = cv2.VideoCapture(cameraIndex)
+        self.camera = cv2.VideoCapture(cameraIndex)
         sleep(0.5)
-        corners = []
-        closestCorners = []
+        self.corners = []
+        self.closestCorners = []
         DOWNSAMPLE = False
         SHOW_IMAGE = True
         self.updateCoords()
+        self.updateClosestCoords()
 
-    def read():
-        return camera.read()
+    def read(self):
+        return self.camera.read()
 
-    def updateCoords:
+    def updateCoords(self):
         returned, image = self.read()
         if not returned:
             return
+        cv2.imshow("Camera Class", image)
+        cv2.waitKey(1)
         lookFor = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) # looking for 6 by 6
-        corners, ids = aruco.detectMarkers(image, lookFor)[1:2]
+        self.corners = aruco.detectMarkers(image, lookFor)[0]
+        # print(self.corners)
 
-    def updateClosestCoords:
+    def updateClosestCoords(self):
         deltaX = 0
         deltaY = 0
-        for marker in corners:
-            localDeltaX = abs(marker[3].X-marker[1].X)
-            if abs(marker[2].X-marker[4].X) > localDeltaX:
-                localDeltaX = abs(marker[2].X-marker[4].X)
+        if self.corners == None:
+            return
+        if self.corners == [0]:
+            return
+        # print(self.corners)
+        for marker in self.corners:
+            marker = marker[0] # extra vector layer
+            # print(marker)
+            localDeltaX = abs(marker[2].item(0)-marker[0].item(0))
+            if abs(marker[1].item(0)-marker[3].item(0)) > localDeltaX:
+                localDeltaX = abs(marker[1].item(0)-marker[3].item(0))
 
-            localDeltaY = abs(marker[3].Y-marker[1].Y)
-            if abs(marker[4].Y-marker[2].Y) > localDeltaY:
-                localDeltaY = abs(marker[4].Y-marker[2].Y)
+            localDeltaY = abs(marker[2].item(1)-marker[0].item(1))
+            if abs(marker[3].item(1)-marker[1].item(1)) > localDeltaY:
+                localDeltaY = abs(marker[3].item(1)-marker[1].item(1))
 
             if localDeltaX > deltaX or localDeltaY > deltaY:
                 deltaX = localDeltaX
                 deltaY = localDeltaY
-                closestCorners = marker
+                self.closestCorners = marker
+
+    def getCoords(self):
+        return self.closestCorners
 
