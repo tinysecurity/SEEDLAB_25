@@ -9,10 +9,7 @@ import numpy as np
 mycam = Camera(0)
 #camera = cv2.VideoCapture(0)
 while True:
-    mycam.updateCoords()
-    mycam.updateClosestCoords()
-    mycam.getCoords()
-    print(mycam.getCoords())
+    print(mycam.everything())
     if cv2.waitKey(33) == ord('q'):
         break
 

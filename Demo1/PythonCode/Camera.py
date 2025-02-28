@@ -6,8 +6,10 @@ from time import sleep
 class Camera:
     # class variable initalization
     DOWNSAMPLE = False
+    SCALE = 0.5
     SHOW_IMAGE = True
     FLIP_IMAGE = True
+
 
     def __init__(self, cameraIndex):
         # camera startup
@@ -20,8 +22,10 @@ class Camera:
         self.updateCoords()
         self.updateClosestCoords()
 
+
     def read(self):
         return self.camera.read()
+
 
     def updateCoords(self):
         # read an image from the camera
@@ -31,23 +35,25 @@ class Camera:
 
         # image processing
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
-        if self.FLIP_IMAGE:
-            image = cv2.flip(image, 1)
         if self.DOWNSAMPLE:
-            factor = 0.5
+            SCALE = 0.5
             image = cv2.resize(image, (0,0), fx=factor, fy=factor)
-        #adding grid:
-        image = cv2.line(image,[320,0],[320,480], (255,0,0),4)
-        image = cv2.line(image,[0,240],[640,240], (0,255,0),4)
 
-        # showing image
+        # showing image w/ user modifications to frame
         if self.SHOW_IMAGE:
-            cv2.imshow("camera live capture", image)
-        cv2.waitKey(1)
+            shownImage = image
+            if self.FLIP_IMAGE:
+                shownImage = cv2.flip(shownImage, 1)
+            #adding grid:
+            shownImage = cv2.line(shownImage,[320,0],[320,480], (255,0,0),4)
+            shownImage = cv2.line(shownImage,[0,240],[640,240], (0,255,0),4)
+            cv2.imshow("camera live capture", shownImage)
+            cv2.waitKey(1)
 
         # search for and return any aruco markers
         lookFor = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) # looking for 6 by 6
         self._corners = aruco.detectMarkers(image, lookFor)[0]
+
 
     def updateClosestCoords(self):
         # checking if instance variables are valid
@@ -78,8 +84,10 @@ class Camera:
                 deltaY = localDeltaY
                 self._closestCorners = marker
 
+
     def getCoords(self):
         return self._closestCorners
+
 
     def everything(self):
         self.updateCoords()
