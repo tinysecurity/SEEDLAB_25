@@ -7,10 +7,15 @@ from time import sleep
 import numpy as np
 
 mycam = Camera(0)
-# camera = cv2.VideoCapture(0)
+#camera = cv2.VideoCapture(0)
 while True:
     mycam.updateCoords()
     mycam.updateClosestCoords()
-    # mycam.getCoords()
+    mycam.getCoords()
     print(mycam.getCoords())
+    if cv2.waitKey(33) == ord('q'):
+        break
+
+mycam.camera.release()
+cv2.destroyAllWindows()
 
