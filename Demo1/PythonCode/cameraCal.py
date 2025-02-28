@@ -2,30 +2,42 @@
 #This is the beginning of the camera calibration work
 # 1st I learn how to cal the camera, pose data, then integrate code
 import numpy as np
-import cv2 as cv
+import cv2
 from cv2 import aruco
 import glob
-
-criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30,0.001)
-camera = cv.VideoCapture(0)
-objp = np.zeros((6*7,3), np.float32)
-objp[:,:2] = np.mgrid[0:7,0:6].T.reshape(-1,2)
+import os
+from time import sleep
+CHECKERBOARD = (9,7)
+MIN_POINTS= 50
+criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30,0.001)
+a = 8
+b = 6
+objp = np.zeros((b*a,3), np.float32)
+objp[0:,:2] = np.mgrid[0:a,0:b].T.reshape(-1,2)
+camera = cv2.VideoCapture(0)
 objpoints = [] # real world points 3d
 imgpoints = [] # image plane 2d
+print(os.getcwd())
 
 
 while(True):
 	ret, image = camera.read()
-	gray = cv.cvtColor(image,cv.COLOR_BGR2GRAY)
-	cv.imshow("output",gray)
-	ret2, corners = cv.findChessboardCorners(gray,(8,8),None)
-	if ret2 == True:
+	grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	ret, corners = cv2.findChessboardCorners(grey, (8,6), None)
+	cv2.imshow('Viewport',grey)
+	
+	if ret == True:
+		print("True")
 		objpoints.append(objp)
-		corners2 = cv.cornerSubPix(gray,corners, (11,11),(-1,-1),criteria)
-
+		print(objpoints)
+		corners2 = cv2.cornerSubPix(grey,corners, (11,11), (-1,-1), criteria)
 		imgpoints.append(corners2)
-		cv.drawChessboardCorners(gray, (8,8), corners2, ret2)
-		cv.imshow('img',gray)
-	if cv.waitKey(33) == ord('q'): #allows us to close window
+		cv2.drawChessboardCorners(image,(8,6), corners2, ret)
+		cv2.imshow('viewport2',image)
+		print("Proc")
+		cv2.waitKey(1)
+	if cv2.waitKey(33) == ord('q'): #allows us to close window
+		camera.release()
 		break
-cv.destroyAllWindows()
+cv2.destroyAllWindows()
+

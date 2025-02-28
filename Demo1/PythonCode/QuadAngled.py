@@ -17,6 +17,9 @@ from smbus2 import SMBus
 import queue
 import threading
 
+import os
+import glob
+
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) #dictionary for markers
 camera = cv2.VideoCapture(0) #setting up camera
 sleep(0.5)
