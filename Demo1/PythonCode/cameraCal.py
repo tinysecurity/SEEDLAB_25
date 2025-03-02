@@ -41,3 +41,22 @@ while(True):
 		break
 cv2.destroyAllWindows()
 
+ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, grey.shape[::-1],None,None)
+os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg')
+
+img = cv2.imread('img8.jpg')
+cv2.imshow('piccheck', img)
+sleep(10)
+print("Processing")
+
+mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w,h), 5)
+dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
+ 
+# crop the image
+x, y, w, h = roi
+dst = dst[y:y+h, x:x+w]
+
+cv2.imwrite('calibresult.jpg', dst)
+cv2.imshow('unfucked',dst)
+sleep(10)
+cv2.destroyAllWindows()
