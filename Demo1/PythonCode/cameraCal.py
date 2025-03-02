@@ -7,6 +7,8 @@ from cv2 import aruco
 import glob
 import os
 from time import sleep
+import yaml
+
 CHECKERBOARD = (9,7)
 MIN_POINTS= 50
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30,0.001)
@@ -44,19 +46,35 @@ cv2.destroyAllWindows()
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, grey.shape[::-1],None,None)
 os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg')
 
-img = cv2.imread('img8.jpg')
-cv2.imshow('piccheck', img)
-sleep(10)
-print("Processing")
+data = {'camera_matrix': np.asarray(mtx).tolist(),
+        'dist_coeff': np.asarray(dist).tolist(), 'rvecs':np.asarray(rvecs).tolist(), 'tvecs':np.asarray(tvecs).tolist()}
 
-mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w,h), 5)
-dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
+# and save it to a file
+with open("calibration_matrix.yaml", "w") as f:
+    yaml.dump(data, f)
+print("Finished making database")
+
+img = cv2.imread('img9.jpg')
+cv2.imshow('test',img)
+sleep(10)
+h,  w = img.shape[:2]
+newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
+
+print("Processing...")
+# undistort
+dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
  
 # crop the image
 x, y, w, h = roi
 dst = dst[y:y+h, x:x+w]
+cv2.imwrite('calibresult2.jpg', dst)
+cv2.imshow('unfuck',dst)
 
-cv2.imwrite('calibresult.jpg', dst)
-cv2.imshow('unfucked',dst)
 sleep(10)
-cv2.destroyAllWindows()
+testing = cv2.imread('img8.jpg')
+cv2.imshow('random', testing)
+print("Successfully unfucked")
+
+
+
+
