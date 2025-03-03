@@ -20,6 +20,8 @@ import threading
 import yaml
 import os
 
+angle = 0
+
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) #dictionary for markers
 #camera = cv2.VideoCapture(0) #setting up camera
 cam = Camera(0)
@@ -79,6 +81,23 @@ while (True):
         centerX = int((cam.getCoords()[0,0] + cam.getCoords()[1,0] + cam.getCoords()[2,0] + cam.getCoords()[3,0])/4) #find average coord for X
         centerY = int((cam.getCoords()[0,1] + cam.getCoords()[1,1] + cam.getCoords()[2,1] + cam.getCoords()[3,1])/4) #find average coord for Y
 
+
+        #angle detection
+        #3D ray projecting center point into 3D space
+        realMarkerVec = (np.linalg.inv(cam.cameraMatrix)).dot([centerX,centerY,1.0])
+        cameraVec = (np.linalg.inv(cam.cameraMatrix)).dot([320,240,1.0]) #check this
+        #A.B = |A||B|cos(angle) --> angle = arccos[(A.B)/(|A||B|)]
+        tempAngle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
+
+        if centerX > 320:
+            tempAngle = -1*tempAngle
+
+        
+        if tempAngle != angle:
+            angle = tempAngle
+            print(angle)
+
+        
         #figuring out which quadrant the marker is in:
         #checking that center point is in NW
         if centerX <= 320 and centerY <= 240:

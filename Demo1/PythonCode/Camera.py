@@ -35,6 +35,11 @@ class Camera:
         # get starting vaues
         self.updateCoords()
         self.updateClosestCoords()
+        #set variables from YAML file
+        self.cameraMatrix = np.asarray(data['camera_matrix'])
+        self.distCoeff = np.asarray(data['dist_coeff'])
+        self.rvecs = np.asarray(data['rvecs'])
+        self.tvecs = np.asarray(data['tvecs'])
 
 
     def read(self):
