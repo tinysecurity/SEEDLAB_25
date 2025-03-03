@@ -46,11 +46,11 @@ cv2.destroyAllWindows()
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, grey.shape[::-1],None,None)
 os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg')
 
-data = {'camera_matrix': np.asarray(mtx).tolist(),
+data = {'ret':np.asarray(ret).tolist(),'camera_matrix': np.asarray(mtx).tolist(),
         'dist_coeff': np.asarray(dist).tolist(), 'rvecs':np.asarray(rvecs).tolist(), 'tvecs':np.asarray(tvecs).tolist()}
 
 # and save it to a file
-with open("calibration_matrix.yaml", "w") as f:
+with open("NEW_calibration_matrix.yaml", "w") as f:
     yaml.dump(data, f)
 print("Finished making database")
 

@@ -16,9 +16,20 @@ from cv2 import aruco
 from smbus2 import SMBus
 import queue
 import threading
-
+import yaml
 import os
 import glob
+#ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, grey.shape[::-1],None,None)
+os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg')
+with open("calibration_matrix.yaml", "r") as f:
+	data = yaml.safe_load(f)
+
+cameraMatrix = np.asarray(data['camera_matrix'])
+distCoeff = np.asarray(data['dist_coeff'])
+ret = np.asarray(data['ret'])
+rvecs = np.asarray(data['rvecs'])
+tvecs = np.asarray(data['tvecs'])
+
 
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) #dictionary for markers
 camera = cv2.VideoCapture(0) #setting up camera
