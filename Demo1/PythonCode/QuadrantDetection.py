@@ -1,4 +1,4 @@
-#---------------------
+#q---------------------
 #Julie Treesh, Sing Piper
 #02/16/2025
 #Quadrant  Detection Code for the Raspberry Pi
@@ -17,6 +17,8 @@ from cv2 import aruco
 from smbus2 import SMBus
 import queue
 import threading
+import yaml
+import os
 
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) #dictionary for markers
 #camera = cv2.VideoCapture(0) #setting up camera
