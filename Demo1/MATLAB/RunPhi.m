@@ -7,6 +7,9 @@
 K=0.38; % DC gain [rad/Vs]
 sigma=8.5; % time constant reciprocal [1/s]
 Kp = 20;
+% P = 27.5212039531514
+% I = 139.174517974539
+
 
 % Right k = 1.9; Right sigma = 10
 % Left k = 1.65; Right sigma = 11
@@ -15,11 +18,11 @@ Kp = 20;
 % open the block diagram so it appears in the documentation when published.
 % Make sure the block diagram is closed before running the publish function
 %
-open_system('Cphi')
+open_system('Phi')
 %
 % run the simulation
 %
-out=sim('Cphi');
+out=sim('Phi');
 %% A Plot of the results
 PhiData = readtable('phiDotStepResponse.csv', 'VariableNamingRule', 'preserve');
 

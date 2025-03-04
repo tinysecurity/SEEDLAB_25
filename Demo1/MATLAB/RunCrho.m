@@ -6,7 +6,7 @@
 %% Define motor parameters
 K=0.07; % DC gain [rad/Vs]
 sigma=11; % time constant reciprocal [1/s]
-Kp = 1;
+Kp = 28;
 
 % Right k = 1.9; Right sigma = 10
 % Left k = 1.65; Right sigma = 11
