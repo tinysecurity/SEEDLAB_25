@@ -80,22 +80,29 @@ while (True):
     if len(cam.getCoords()) !=0: #if a marker is detected
         centerX = int((cam.getCoords()[0,0] + cam.getCoords()[1,0] + cam.getCoords()[2,0] + cam.getCoords()[3,0])/4) #find average coord for X
         centerY = int((cam.getCoords()[0,1] + cam.getCoords()[1,1] + cam.getCoords()[2,1] + cam.getCoords()[3,1])/4) #find average coord for Y
-
-
-        #angle detection
+        a = 5/(2.54*2)
+        objectPoints = np.array([[-a,a,0],[a, a, 0],[a, -a,0],[-a,-a,0]])
+        
+        ret, rvec2, tvec2 = cv2.solvePnP(objectPoints, np.asarray(cam.getCoords()),cam.cameraMatrix, cam.distCoeff)
+        #print(f'rvec: {rvec2}')
+        #print(f'tvec: {tvec2}')
+	#angle detection
         #3D ray projecting center point into 3D space
+        lengthOf = np.linalg.norm(tvec2)
+        print(f'Length: {lengthOf}')
         realMarkerVec = (np.linalg.inv(cam.cameraMatrix)).dot([centerX,centerY,1.0])
         cameraVec = (np.linalg.inv(cam.cameraMatrix)).dot([320,240,1.0]) #check this
         #A.B = |A||B|cos(angle) --> angle = arccos[(A.B)/(|A||B|)]
         tempAngle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
-
+        #distance = np.linalg.norm(realMarkerVec)
+        #print(f'Distance: {distance}')
         if centerX > 320:
             tempAngle = -1*tempAngle
 
         
         if tempAngle != angle:
             angle = tempAngle
-            print(angle)
+            print(f'Angle:{angle}')
 
         
         #figuring out which quadrant the marker is in:
