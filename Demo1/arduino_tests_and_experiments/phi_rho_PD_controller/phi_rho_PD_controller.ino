@@ -32,12 +32,9 @@ float rhoDotError = 0;
 float rhoDotDesired = 0;
 float KpRhoDot = 28;
 float KpRho = 16.36;
-float KdRho = 1.62;
-float Nrho = 1370;
 float KiRho = 36.85;
 float rhoErrorP = 0;
-float rhoErrorD = 0;
-float filterRho = 0;
+float rhoErrorI = 0;
 
 // Initialize control values PHI 
 float vDelta = 0;
@@ -49,20 +46,19 @@ float phiDotError = 0;
 float phiDotDesired = 0;
 float KpPhiDot = 20;
 float KpPhi = 27.52;
-float KdPhi = 2.01;
-float Nphi = 721.57;
 float KiPhi = 139.17;
 float phiErrorP = 0;
-float phiErrorD = 0;
-float filterPhi = 0;
+float phiErrorI = 0;
+
 
 // Step input parameters
 float pathTime = 10;
 float pathRadius = 1;
 
-// Time tracking variables
+// Initialize time tracking variables
 long int timeOffSet = 0;
 long int time = 0;
+
 
 void setup() {
   Serial.begin(115200);
@@ -84,21 +80,27 @@ void setup() {
   // ---------- CSV ----------
   Serial.println("TIME,vBar,vDelta,rhoDot,phiDot");
   
+  //Desired Values
+  rhoDesired = 3;
+  phiDesired = PI;
 }
 
 void loop() {
+  // ---------------- Current time --------------------------
   currTime = (float)(millis()-timeOffSet)/1000;
   time = millis();
-  // // Step loop
-  // if((currTime <= 2 || currTime >= 12) && currTime < 7){
+  
+  // ---------------- Step Loop ------------------------------
+  // Step loop
+  // if((currTime <= 2 || currTime >= 12)){
   //   // Step loop down time
-  //   rhoDotDesired = 0;
-  //   phiDotDesired = 0;
+  //   rhoDesired = 0;
+  //   phiDesired = 0;
   // }else if (currTime > 2 && currTime < 12){
   //   // Step loop up time
-  //   rhoDotDesired = (PI * pathRadius) / pathTime;
-  //   phiDotDesired = PI / pathTime; 
-  // }else if (currTime >= 7){
+  //   rhoDesired = 1;
+  //   phiDesired = 0;
+  // }else if (currTime >= 12){
   //   //Go back to staart of step loop
   //   currTime = 0;
   //   timeOffSet = millis();
@@ -108,9 +110,44 @@ void loop() {
   //   currTime = 0;
   //   timeOffSet = millis();
   // }
-  rhoDotDesired = (PI * pathRadius) / pathTime;
-  phiDotDesired = PI / pathTime;
   
+  // ----------------- PD Controller ----------------------------
+  // Get current speed and position for each wheel
+  for(int motorChoice = 0; motorChoice < 2; motorChoice++){
+    // Read position and angular velocity
+    actualPos[motorChoice] = countsToRadians(readEncoder(motorChoice));
+    actualSpeed[motorChoice] = rad2AngVel(prevPos[motorChoice], prevTime, actualPos[motorChoice], currTime);
+  }
+
+  // Calculate rhoDot and phiDot
+  rhoDot = WHEEL_RADIUS * ((actualSpeed[RIGHT] + (-actualSpeed[LEFT])) / 2);
+  phiDot = WHEEL_RADIUS * ((actualSpeed[RIGHT] - (-actualSpeed[LEFT])) / WIDTH_OF_WHEELBASE);
+
+  // Calculate rho and Phi
+  rho = WHEEL_RADIUS * ((actualPos[RIGHT] + (-actualPos[LEFT])) / 2);
+  phi = WHEEL_RADIUS * ((actualPos[RIGHT] - (-actualPos[LEFT])) / WIDTH_OF_WHEELBASE);
+
+
+  // ------------ Rho ----------------------
+  // proportional error rho
+  rhoErrorP = rhoDesired - rho;
+  
+  // Integral Error
+  rhoErrorI = rhoErrorI + rhoErrorP*((float)desiredTs /1000);
+
+  // find desired speed rho
+  rhoDotDesired = KpRho * rhoErrorP + KiRho * rhoErrorI;
+
+  // ------------ Phi ----------------------
+  // proportional error phi
+  phiErrorP = phiDesired - phi;
+
+  // Integral Error
+  phiErrorI = phiErrorI + phiErrorP*((float)desiredTs /1000);
+
+  // find desired speed phi
+  phiDotDesired = KpPhi * phiErrorP + KiPhi * phiErrorI;
+
   //----------------- Inner Loop Control ---------------------------
   rhoDotError = rhoDotDesired - rhoDot;
   phiDotError = phiDotDesired - phiDot;
@@ -119,9 +156,29 @@ void loop() {
   // Calculate Voltage for each given Vbar and Vdelta
   vBar = KpRhoDot * rhoDotError;
   vDelta = KpPhiDot * phiDotError;
-  voltage[RIGHT] = (vBar + vDelta) / 2;
-  voltage[LEFT] = -(vBar - vDelta) / 2;
   
+  // Wind up control rho (keeps the motors at a maximum voltage)
+  if(abs(vBar) >= 2*batteryVoltage){
+    // keep the speed at or bellow the max voltage while keeping the sign
+    vBar = 2*batteryVoltage * (vBar/abs(vBar));
+    // Undo the integration calculation
+    rhoErrorI = rhoErrorI - rhoErrorP*((float)desiredTs /1000);
+  }
+  
+  // Wind up control phi(keeps the motors at a maximum speed)
+  if(abs(vDelta) >= 2*batteryVoltage){
+    // keep the speed at or bellow the max voltage while keeping the sign
+    vDelta = 2*batteryVoltage * (vDelta/abs(vDelta));
+    // Undo the integration calculation
+    phiErrorI = phiErrorI - phiErrorP*((float)desiredTs /1000);
+  }
+
+  voltage[RIGHT] = (vBar + vDelta) / 2;
+  voltage[LEFT] = -((vBar - vDelta) / 2);
+  
+  
+  
+  // Push voltage to motor with correct sign
   for(int motorChoice = 0; motorChoice < 2; motorChoice++){
 
     // Correct voltage sign
@@ -135,21 +192,20 @@ void loop() {
     // Write voltage to motor
     PWM = 255*abs(voltage[motorChoice])/batteryVoltage;
     analogWrite(motor[motorChoice], min(PWM,255));
-
-    // Read position and angular velocity
-    actualPos[motorChoice] = countsToRadians(readEncoder(motorChoice));
-    actualSpeed[motorChoice] = rad2AngVel(prevPos[motorChoice], prevTime, actualPos[motorChoice], currTime);
-
-    // update postition
-    prevPos[motorChoice] = actualPos[motorChoice];
   }
+  // ------------------ Update Values --------------------------------
+  // Update rho and phi
+  rhoPrev = rho;
+  phiPrev = phi;
 
-  // Calculate rhoDot and phiDot
-  rhoDot = WHEEL_RADIUS * ((actualSpeed[RIGHT] + (-actualSpeed[LEFT])) / 2);
-  phiDot = WHEEL_RADIUS * ((actualSpeed[RIGHT] - (-actualSpeed[LEFT])) / WIDTH_OF_WHEELBASE);
+  // update postition
+  prevPos[RIGHT] = actualPos[RIGHT];
+  prevPos[LEFT] = actualPos[LEFT];
 
-  
-  // Print relevant info
+  // Update prev time
+  prevTime = currTime;
+
+  //----------------- Print relevant info ---------------------------
   if((time - lastUpdateTime) >= updateInterval){
     Serial.print(currTime);
     Serial.print(",");
@@ -157,15 +213,16 @@ void loop() {
     Serial.print(",");
     Serial.print(vDelta);
     Serial.print(",");
+    Serial.print(rhoDotDesired);
+    Serial.print(",");
+    Serial.print(phiDotDesired);
+    Serial.print(",");
     Serial.print(rhoDot);
     Serial.print(",");
     Serial.print(phiDot);
     Serial.print("\r\n");
     lastUpdateTime = time;
   }
-
-  // Update prev time
-  prevTime = currTime;
   delay(1);
 }
 
