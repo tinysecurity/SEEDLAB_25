@@ -2,7 +2,7 @@
 #define MACRO_DEFAULTS
 #define LEFT 0
 #define RIGHT 1
-#define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel
+#define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel 
 #define WIDTH_OF_WHEELBASE 0.3683 // NOTE: we need wheelbase width to calculate angle
 #endif
 
@@ -20,7 +20,7 @@ volatile uint8_t instruction[32] = {0};
 float desiredDistance = 0;
 float desiredAngleDegrees = 0;
 unsigned long lastUpdateTime = 0;
-unsigned long updateInterval = 50;
+unsigned long updateInterval = 500;
 
 // Initialize control values RHO
 float vBar = 0;
@@ -59,6 +59,9 @@ float pathRadius = 1;
 long int timeOffSet = 0;
 long int time = 0;
 
+// Input Desired test values
+float rhoDesiredFeet = 10;
+float phiDesiredDegrees = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -80,9 +83,7 @@ void setup() {
   // ---------- CSV ----------
   Serial.println("TIME,vBar,vDelta,rhoDot,phiDot");
   
-  //Desired Values
-  rhoDesired = 3;
-  phiDesired = PI;
+  
 }
 
 void loop() {
@@ -90,26 +91,13 @@ void loop() {
   currTime = (float)(millis()-timeOffSet)/1000;
   time = millis();
   
-  // ---------------- Step Loop ------------------------------
-  // Step loop
-  // if((currTime <= 2 || currTime >= 12)){
-  //   // Step loop down time
-  //   rhoDesired = 0;
-  //   phiDesired = 0;
-  // }else if (currTime > 2 && currTime < 12){
-  //   // Step loop up time
-  //   rhoDesired = 1;
-  //   phiDesired = 0;
-  // }else if (currTime >= 12){
-  //   //Go back to staart of step loop
-  //   currTime = 0;
-  //   timeOffSet = millis();
-  //   Serial.println("TIME,vBar,vDelta,rhoDot,phiDot");
-  // }else{
-  //   // how did you get here
-  //   currTime = 0;
-  //   timeOffSet = millis();
-  // }
+  // ---------------- Step LDelay ------------------------------
+  // Step Delay
+  if((currTime >= .5)){
+    // Step loop down time
+    phiDesired = phiDesiredDegrees * 1.0625 * (PI/180);
+    rhoDesired = rhoDesiredFeet * 0.3048 * 1.017;
+  }
   
   // ----------------- PD Controller ----------------------------
   // Get current speed and position for each wheel
@@ -158,17 +146,17 @@ void loop() {
   vDelta = KpPhiDot * phiDotError;
   
   // Wind up control rho (keeps the motors at a maximum voltage)
-  if(abs(vBar) >= 2*batteryVoltage){
+  if(abs(vBar) >= batteryVoltage){
     // keep the speed at or bellow the max voltage while keeping the sign
-    vBar = 2*batteryVoltage * (vBar/abs(vBar));
+    vBar = batteryVoltage * (vBar/abs(vBar));
     // Undo the integration calculation
     rhoErrorI = rhoErrorI - rhoErrorP*((float)desiredTs /1000);
   }
   
   // Wind up control phi(keeps the motors at a maximum speed)
-  if(abs(vDelta) >= 2*batteryVoltage){
+  if(abs(vDelta) >= batteryVoltage/2){
     // keep the speed at or bellow the max voltage while keeping the sign
-    vDelta = 2*batteryVoltage * (vDelta/abs(vDelta));
+    vDelta = batteryVoltage/2 * (vDelta/abs(vDelta));
     // Undo the integration calculation
     phiErrorI = phiErrorI - phiErrorP*((float)desiredTs /1000);
   }
