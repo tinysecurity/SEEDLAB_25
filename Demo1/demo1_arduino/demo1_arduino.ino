@@ -11,7 +11,7 @@
 #include <Wire.h>
 #include "encoder.hpp"
 #include "position.hpp"
-#include "pid_movement.hpp"
+#include "pi_rho_phi.hpp"
 
 const uint8_t i2cAddress = 8;
 volatile uint8_t offset;
@@ -21,14 +21,6 @@ volatile uint8_t instruction[32] = {0};
 // Initialize desired position and angle
 float desiredDistance = 0;
 float desiredAngle = 0;
-
-// Initialize current values
-int currDistance = 0; // in meters
-int currAngleDegrees = 0;
-
-// Do once
-bool forward1 = 0;
-bool turn1 = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -53,21 +45,9 @@ void setup() {
 }
 
 void loop() {
-  currTime = (float)millis()/1000;
-  currDistance = position.x;
-  if(currTime >= 5){
-    if(!forward1){
-      desiredDistance = 1;
-      desiredAngle = 180;
-      findRads();
-      forward1 = 1;
-    }
-  }
-  PIDposControl(RIGHT);
-  PIDposControl(LEFT);
-  updatePosition(position);
-  prevTime = currTime;
-  delay(5);
+  // PUT CODE TO RECIEVE PI INSTRUCTIONS HERE
+  // How to call PI controller
+  PiRhoPhi(desiredDistance, desiredAngleDegrees);  
 }
 
 void receive() {
