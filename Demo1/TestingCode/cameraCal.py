@@ -44,13 +44,13 @@ while(True):
 cv2.destroyAllWindows()
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, grey.shape[::-1],None,None)
-os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg')
+os.chdir('/home/seedlab/SEEDLAB_25/Demo1/TestingCode/calibrationImg')
 
 data = {'camera_matrix': np.asarray(mtx).tolist(),
         'dist_coeff': np.asarray(dist).tolist(), 'rvecs':np.asarray(rvecs).tolist(), 'tvecs':np.asarray(tvecs).tolist()}
 
 # and save it to a file
-with open("NEW_calibration_matrix.yaml", "w") as f:
+with open("JULIE_calibration_matrix.yaml", "w") as f:
     yaml.dump(data, f)
 print("Finished making database")
 
