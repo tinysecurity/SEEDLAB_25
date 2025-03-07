@@ -5,6 +5,7 @@ from time import sleep
 import os
 import yaml
 import numpy as np
+import math
 
 #read and open YAML file
 data = yaml.safe_load(open("calibration_matrix.yaml", "r"))
@@ -86,8 +87,21 @@ class Camera:
                 distance = np.linalg.norm(tvec)
                 realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([centerX,centerY,1.0])
                 cameraVec = (np.linalg.inv(self.cameraMatrix)).dot([320,240,1.0])
-                angle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
-                if not centerX > 320:
+                #angle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
+                R,_ = cv2.Rodrigues(rvec)
+                #print(R)
+                #angle = np.rad2deg(math.atan2(-1*R[2][0],math.sqrt(math.pow(R[2][1],2)+math.pow(R[2][2],2))))
+                angle = np.rad2deg(math.atan(R[1][2]/R[0][2]))
+                #print(f'w: {np.rad2deg(math.atan2(R[1][0],R[0][0]))}')
+                #print(f'v: {np.rad2deg(-1*math.asin(R[2][0]))}')
+                #print(f'u: {np.rad2deg(math.atan2(R[2][1],R[2][2]))}')
+                #R = R.T
+                #angle = -np.matrix(cv2.Rodrigues(rvecs)[0]).T*np.linalg.norm(rvec)
+                #angle = abs(math.atan(tvecs[0][0]/tvecs[0][2]))
+                angle = np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0]))
+                
+                
+                if centerX > 320:
                     angle = -1*angle
                 thisDict = {
                     "corners":marker,
