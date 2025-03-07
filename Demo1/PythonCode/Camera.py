@@ -92,7 +92,7 @@ class Camera:
                 #angle = np.rad2deg(math.atan2(-1*R[2][0],math.sqrt(math.pow(R[2][1],2)+math.pow(R[2][2],2))))
                 
                 #angle = atan((centerX - cx)/fx)
-                angle = np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0]))
+                angle = abs(np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
                 
                 
                 if centerX > 320:

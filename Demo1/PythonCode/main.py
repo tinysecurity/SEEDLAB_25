@@ -78,7 +78,6 @@ while True:
             angle = round(cam.arucoDict[0]["angle"],2) #updates the angle variable if there was a change in angle
             q.put(angle) #puts angle into queue to be displayed on LCD
             markers = "Markers found"
-            #print(cam.tvecs)
             tempAngleAndLength[0] = angle
 
         if ((lengthOf + 0.5 <= cam.arucoDict[0]["distance"]) or (lengthOf - 0.5 >= cam.arucoDict[0]["distance"])):
