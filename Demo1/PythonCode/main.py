@@ -89,7 +89,7 @@ while True:
             angleAndLength[0] = tempAngleAndLength[0]
             angleAndLength[1] = tempAngleAndLength[1]
             print(angleAndLength)
-            #i2cArduino.write_byte_data(ARD_ADDR,offset,angleAndLength) #sends angle and distance to Arduino
+            #i2cArduino.write_block_data(ARD_ADDR,offset,angleAndLength) #sends angle and distance to Arduino
 
     if len(cam.arucoDict) == 0: #if no markers are detected
         if markers != "No markers found":
