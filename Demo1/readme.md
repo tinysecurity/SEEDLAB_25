@@ -10,6 +10,10 @@ PythonCode Folder:
     
     main.py - This code will take information from the camera. It will print out the angle that the marker is at on the LCD screen. It will also print how far away the marker is from the camera.
 
+TestingCode
+- cameraCal.py is the script we run to update and create the camera calibration YAML file
+- calibrationImg is a directory containing the finished/created YAML files.
+
 
 arduino_tests_and_experiments:
 
