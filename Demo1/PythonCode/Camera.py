@@ -8,7 +8,7 @@ import numpy as np
 import math
 
 #read and open YAML file
-data = yaml.safe_load(open("calibration_matrix.yaml", "r"))
+data = yaml.safe_load(open("JULIE4_calibration_matrix.yaml", "r"))
 
 #set variables from YAML file
 cameraMatrix = np.asarray(data['camera_matrix'])

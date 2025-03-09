@@ -21,7 +21,6 @@ objpoints = [] # real world points 3d
 imgpoints = [] # image plane 2d
 print(os.getcwd())
 
-
 while(True):
 	ret, image = camera.read()
 	grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -50,7 +49,7 @@ data = {'camera_matrix': np.asarray(mtx).tolist(),
         'dist_coeff': np.asarray(dist).tolist(), 'rvecs':np.asarray(rvecs).tolist(), 'tvecs':np.asarray(tvecs).tolist()}
 
 # and save it to a file
-with open("JULIE_calibration_matrix.yaml", "w") as f:
+with open("JULIE2_calibration_matrix.yaml", "w") as f:
     yaml.dump(data, f)
 print("Finished making database")
 
