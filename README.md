@@ -7,7 +7,7 @@ Jake Stanley, [jtstanley@mines.edu](mailto:jtstanley@mines.edu)\
 Liam Abell, [labell@mines.edu](mailto:labell@mines.edu)\
 Sing Piper, [singpiper@mines.edu](mailto:singpiper@mines.edu)\
 Julie Treesh, [jtreesh@mines.edu](mailto:jtreesh@mines.edu)\
-Nolan Pratt, [nolanpratt@mines.edu](mailto:nolanpratt@mines.edu)\
+Nolan Pratt, [nolanpratt@mines.edu](mailto:nolanpratt@mines.edu)
 
 ## Table of Contents
 
