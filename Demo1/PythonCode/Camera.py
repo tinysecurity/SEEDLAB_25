@@ -81,8 +81,9 @@ class Camera:
                 marker = marker[0] # remove extra vector layer
                 centerX = int((marker[0].item(0) + marker[1].item(0) + marker[2].item(0) + marker[3].item(0))/4) #find average coord for X
                 centerY = int((marker[0].item(1) + marker[1].item(1) + marker[2].item(1) + marker[3].item(1))/4) #find average coord for Y
-                a = 5/(2.54*2)
+                a = 5/(2.54*2) # finding the side lengths of aruco marker with origin at center of marker
                 objectPoints = np.array([[-a,a,0],[a, a, 0],[a, -a,0],[-a,-a,0]])
+                # finding tvec and rvec for each marker
                 ret, rvec, tvec = cv2.solvePnP(objectPoints, np.asarray(marker),self.newCameraMatrix, self.distCoeff)
                 distance = np.linalg.norm(tvec)
                 realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([centerX,centerY,1.0])
@@ -92,11 +93,17 @@ class Camera:
                 #angle = np.rad2deg(math.atan2(-1*R[2][0],math.sqrt(math.pow(R[2][1],2)+math.pow(R[2][2],2))))
                 
                 #angle = atan((centerX - cx)/fx)
+                # using trigonometry to calculate the angle to aruco marker, given x and z components of tvec
                 angle = abs(np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
                 
                 
-                if centerX > 320:
+                if centerX > 320: # make sure left of camera is positive
                     angle = -1*angle
+                # define dictionary values
+                # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
+                # distance: "unsigned" scalar distance value
+                # angle: signed scalar angle value
+                # tvec and rvec: raw values, as returned from solvePnP
                 thisDict = {
                     "corners":marker,
                     "distance":distance,
@@ -104,6 +111,7 @@ class Camera:
                     "rvec":rvec,
                     "tvec":tvec}
                 self.arucoDict.append(thisDict)
+                # set closestDict based on the closest marker
                 if distance < shortestDistance or shortestDistance == -1:
                     shortestDistance = distance
                     self.closestDict = thisDict
