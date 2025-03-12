@@ -24,6 +24,7 @@ class Camera:
     ALPHA = 1
     _DET_PARAMS = aruco.DetectorParameters()
     _DET_PARAMS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+    _DET_PARAMS.useAruco3Detection = True
     _REF_PARAMS = aruco.RefineParameters()
     DETECTOR = aruco.ArucoDetector(aruco.getPredefinedDictionary(aruco.DICT_6X6_50),_DET_PARAMS,_REF_PARAMS)
 
