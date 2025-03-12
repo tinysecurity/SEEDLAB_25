@@ -27,20 +27,20 @@ arduino_tests_and_experiments:
     
     This folder contains all of the test code that we used to get to our final system:
     
-    oldPIcontroller -  
+    oldPIcontroller -  This contains our old PID controller from the Mini Project. 
     
-    phi_rho_inner_loop_controller - 
+    phi_rho_inner_loop_controller - This contains the files for when we were experimenting with the inner loop to our controller.
     
-    phi_rho_PI_controller - 
+    phi_rho_PI_controller - This contains the files for when we started experimenting with a PI controller instead of a PD controller. 
     
-    phi_rho_step_response_arduino - 
+    phi_rho_step_response_arduino - This contains the code used to extract the data from our robot to import into MATLAB for plotting. 
     
-    position_angle_with_old_PI - 
+    position_angle_with_old_PI - This contains the files to get the position and angle from our old PI controller. This was used for testing our implementations. 
     
 demo1_arduino:
 
-    demo1_arduino.ino - This is the final implementation of Arduino code used to move our robot. It uses a PI controller to get feedback on the position of the robot and then make adjustments to correct for any error. We are able to set a distance and angle for the robot to travel to.  
+    demo1_arduino.ino - This is the final implementation of Arduino code used to move our robot. It uses a PI controller to get feedback on the position of the robot and then make adjustments to correct for any error. We are able to set a distance and angle for the robot to travel to. 
     
-    encoder.hpp - This header file 
+    encoder.hpp - This header file contains all of the functions that help us read values from the motor encoders.
     
-    pi_rho_phi.hpp - 
+    pi_rho_phi.hpp - this file contains all of the functions and variables needed for our main file.
