@@ -22,6 +22,10 @@ class Camera:
     SCALE = 0.5
     FLIP_IMAGE = True
     ALPHA = 1
+    _DET_PARAMS = aruco.DetectorParameters()
+    _DET_PARAMS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+    _REF_PARAMS = aruco.RefineParameters()
+    DETECTOR = aruco.ArucoDetector(aruco.getPredefinedDictionary(aruco.DICT_6X6_50),_DET_PARAMS,_REF_PARAMS)
 
 
     def __init__(self, cameraIndex):
@@ -69,8 +73,7 @@ class Camera:
         temp_image = self.read()
 
         # search for and return any aruco markers
-        lookFor = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) # looking for 6 by 6
-        corners = aruco.detectMarkers(temp_image, lookFor)[0]
+        corners = self.DETECTOR.detectMarkers(temp_image)[0]
 
         # update all information
         self.arucoDict.clear()
