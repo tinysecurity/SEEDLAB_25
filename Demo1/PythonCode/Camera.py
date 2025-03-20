@@ -5,12 +5,11 @@ from time import sleep
 import os
 import yaml
 import numpy as np
+import math
 
-os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg') #set OS path to calibrationImg folder
-#read and open YAML file from calibrationImg folder
-with open("calibration_matrix.yaml", "r") as f:
-    data = yaml.safe_load(f)
-    
+#read and open YAML file
+data = yaml.safe_load(open("JULIE4_calibration_matrix.yaml", "r"))
+
 #set variables from YAML file
 cameraMatrix = np.asarray(data['camera_matrix'])
 distCoeff = np.asarray(data['dist_coeff'])
@@ -21,8 +20,13 @@ class Camera:
     # class variable initalization
     DOWNSAMPLE = False
     SCALE = 0.5
-    SHOW_IMAGE = True
     FLIP_IMAGE = True
+    ALPHA = 1
+    _DET_PARAMS = aruco.DetectorParameters()
+    _DET_PARAMS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+    _DET_PARAMS.useAruco3Detection = True
+    _REF_PARAMS = aruco.RefineParameters()
+    DETECTOR = aruco.ArucoDetector(aruco.getPredefinedDictionary(aruco.DICT_6X6_50),_DET_PARAMS,_REF_PARAMS)
 
 
     def __init__(self, cameraIndex):
@@ -30,93 +34,105 @@ class Camera:
         self.camera = cv2.VideoCapture(cameraIndex)
         sleep(0.5)
         # initalize variables
-        self._corners = []
-        self._closestCorners = []
-        # get starting vaues
-        self.updateCoords()
-        self.updateClosestCoords()
+        self.arucoDict = []
+        self.closestDict = []
         #set variables from YAML file
         self.cameraMatrix = np.asarray(data['camera_matrix'])
         self.distCoeff = np.asarray(data['dist_coeff'])
         self.rvecs = np.asarray(data['rvecs'])
         self.tvecs = np.asarray(data['tvecs'])
+        # get starting image, find more accurate camera matrix
+        self.image = self.camera.read()[1]
+        h, w = self.image.shape[:2]
+        self.newCameraMatrix = np.asarray(cv2.getOptimalNewCameraMatrix(cameraMatrix,distCoeff,(w,h),self.ALPHA,(w,h))[0])
+        # get starting vaues
+        self.update()
 
 
     def read(self):
-        return self.camera.read()
-
-
-    def updateCoords(self):
         # read an image from the camera
-        returned, image = self.read()
-        if not returned: # quitting program if we can not find image
+        returned, temp_image = self.camera.read()
+        # make sure to only update if an image is captured
+        if not returned:
             return
 
-        # search for and return any aruco markers
-        lookFor = aruco.getPredefinedDictionary(aruco.DICT_6X6_50) # looking for 6 by 6
-        self._corners = aruco.detectMarkers(image, lookFor)[0]
-
-        if self._corners: #if marker is detected
-            #calibrate camera
-            h, w = image.shape[:2]
-            newcameramtx, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix,distCoeff,(w,h),1,(w,h))
-            #undistort image
-            dst = cv2.undistort(image,cameraMatrix,distCoeff,None,newcameramtx)
-
+        # undistort image
+        temp_image = cv2.undistort(temp_image,self.cameraMatrix,self.distCoeff,None,self.newCameraMatrix)
 
         # image processing
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
+        temp_image = cv2.cvtColor(temp_image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
         if self.DOWNSAMPLE:
             SCALE = 0.5
-            image = cv2.resize(image, (0,0), fx=factor, fy=factor)
+            temp_image = cv2.resize(temp_image, (0,0), fx=factor, fy=factor)
 
+        self.image = temp_image
+        return temp_image
+
+
+    def update(self):
+        # read and postprocess frame
+        temp_image = self.read()
+
+        # search for and return any aruco markers
+        corners = self.DETECTOR.detectMarkers(temp_image)[0]
+
+        # update all information
+        self.arucoDict.clear()
+        self.closestDict.clear()
+        shortestDistance = -1
+        if corners:
+            for marker in corners:
+                marker = marker[0] # remove extra vector layer
+                centerX = int((marker[0].item(0) + marker[1].item(0) + marker[2].item(0) + marker[3].item(0))/4) #find average coord for X
+                centerY = int((marker[0].item(1) + marker[1].item(1) + marker[2].item(1) + marker[3].item(1))/4) #find average coord for Y
+                a = 5/(2.54*2) # finding the side lengths of aruco marker with origin at center of marker
+                objectPoints = np.array([[-a,a,0],[a, a, 0],[a, -a,0],[-a,-a,0]])
+                # finding tvec and rvec for each marker
+                ret, rvec, tvec = cv2.solvePnP(objectPoints, np.asarray(marker),self.newCameraMatrix, self.distCoeff)
+                distance = np.linalg.norm(tvec)
+                realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([centerX,centerY,1.0])
+                cameraVec = (np.linalg.inv(self.cameraMatrix)).dot([320,240,1.0])
+                #angle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
+                #R,_ = cv2.Rodrigues(rvec)
+                #angle = np.rad2deg(math.atan2(-1*R[2][0],math.sqrt(math.pow(R[2][1],2)+math.pow(R[2][2],2))))
+                
+                #angle = atan((centerX - cx)/fx)
+                # using trigonometry to calculate the angle to aruco marker, given x and z components of tvec
+                angle = abs(np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
+                
+                
+                if centerX > 320: # make sure left of camera is positive
+                    angle = -1*angle
+                # define dictionary values
+                # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
+                # distance: "unsigned" scalar distance value
+                # angle: signed scalar angle value
+                # tvec and rvec: raw values, as returned from solvePnP
+                thisDict = {
+                    "corners":marker,
+                    "distance":distance,
+                    "angle":angle,
+                    "rvec":rvec,
+                    "tvec":tvec}
+                self.arucoDict.append(thisDict)
+                # set closestDict based on the closest marker
+                if distance < shortestDistance or shortestDistance == -1:
+                    shortestDistance = distance
+                    self.closestDict = thisDict
+
+
+    def show(self):
         # showing image w/ user modifications to frame
-        if self.SHOW_IMAGE:
-            shownImage = image
-            if self.FLIP_IMAGE:
-                shownImage = cv2.flip(shownImage, 1)
-            #adding grid:
-            shownImage = cv2.line(shownImage,[320,0],[320,480], (255,0,0),4)
-            shownImage = cv2.line(shownImage,[0,240],[640,240], (0,255,0),4)
-            cv2.imshow("camera live capture", shownImage)
-            cv2.waitKey(1)
-
-
-    def updateClosestCoords(self):
-        # checking if instance variables are valid
-        if not self._corners: #if marker is not detected
-            self._closestCorners = [] #clear marker coords
-            return
-        if self._corners == [0]:
-            return
-
-        # initalize local comparator variables
-        deltaX = 0
-        deltaY = 0
-
-        # solve for closest and set to instance variable
-        for marker in self._corners:
-            marker = marker[0] # remove extra vector layer
-
-            localDeltaX = abs(marker[2].item(0)-marker[0].item(0))
-            if abs(marker[1].item(0)-marker[3].item(0)) > localDeltaX:
-                localDeltaX = abs(marker[1].item(0)-marker[3].item(0))
-
-            localDeltaY = abs(marker[2].item(1)-marker[0].item(1))
-            if abs(marker[3].item(1)-marker[1].item(1)) > localDeltaY:
-                localDeltaY = abs(marker[3].item(1)-marker[1].item(1))
-
-            if localDeltaX > deltaX or localDeltaY > deltaY:
-                deltaX = localDeltaX
-                deltaY = localDeltaY
-                self._closestCorners = marker
-
-
-    def getCoords(self):
-        return self._closestCorners
-
-
-    def everything(self):
-        self.updateCoords()
-        self.updateClosestCoords()
-        return self.getCoords()
+        # flip image
+        temp_image = self.image
+        if self.FLIP_IMAGE:
+            temp_image = cv2.flip(temp_image, 1)
+        # show image with informative title
+        cv2.imshow("liveFrameView", temp_image)
+        if self.arucoDict:
+            cv2.setWindowTitle('liveFrameView', 'Aruco marker found!')
+        else:
+            cv2.setWindowTitle('liveFrameView', 'No marker in frame.')
+        # wait for q to quit python instance
+        if cv2.waitKey(33) == ord('q'):
+            quit()

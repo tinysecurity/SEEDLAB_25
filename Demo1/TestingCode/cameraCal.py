@@ -21,7 +21,6 @@ objpoints = [] # real world points 3d
 imgpoints = [] # image plane 2d
 print(os.getcwd())
 
-
 while(True):
 	ret, image = camera.read()
 	grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -44,13 +43,13 @@ while(True):
 cv2.destroyAllWindows()
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, grey.shape[::-1],None,None)
-os.chdir('/home/seedlab/SEEDLAB_25/Demo1/PythonCode/calibrationImg')
+os.chdir('/home/seedlab/SEEDLAB_25/Demo1/TestingCode/calibrationImg')
 
-data = {'ret':np.asarray(ret).tolist(),'camera_matrix': np.asarray(mtx).tolist(),
+data = {'camera_matrix': np.asarray(mtx).tolist(),
         'dist_coeff': np.asarray(dist).tolist(), 'rvecs':np.asarray(rvecs).tolist(), 'tvecs':np.asarray(tvecs).tolist()}
 
 # and save it to a file
-with open("NEW_calibration_matrix.yaml", "w") as f:
+with open("JULIE2_calibration_matrix.yaml", "w") as f:
     yaml.dump(data, f)
 print("Finished making database")
 
