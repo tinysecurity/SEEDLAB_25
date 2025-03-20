@@ -10,7 +10,6 @@
 
 #include <Wire.h>
 #include "encoder.hpp"
-#include "position.hpp"
 #include "pi_rho_phi.hpp"
 
 const uint8_t i2cAddress = 8;
@@ -19,7 +18,7 @@ volatile uint8_t msgLength = 0;
 volatile uint8_t instruction[32] = {0};
 
 // Initialize desired position and angle
-float desiredDistance = 0;
+float desiredDistance = 8;
 float desiredAngle = 0;
 
 void setup() {
@@ -47,7 +46,7 @@ void setup() {
 void loop() {
   // PUT CODE TO RECIEVE PI INSTRUCTIONS HERE
   // How to call PI controller
-  PiRhoPhi(desiredDistance, desiredAngleDegrees);  
+  PiRhoPhi(desiredDistance, desiredAngle);
 }
 
 void receive() {
@@ -60,17 +59,4 @@ void receive() {
     msgLength++;
     //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
   }
-}
-
-
-
-// Takes an input of the total distance(meters) to move and which angle(degrees) to move at.
-// Increments the desired position to the new desired position
-void findRads(){
-  float rho = desiredDistance / WHEEL_RADIUS;
-  float phiRads = desiredAngle*PI/180;
-  float radsL =  -(rho - phiRads) / 2;
-  float radsR = (rho + phiRads) / 2;
-  desiredPos[LEFT] = desiredPos[LEFT] + radsL;
-  desiredPos[RIGHT] = desiredPos[RIGHT] + radsR;
 }
