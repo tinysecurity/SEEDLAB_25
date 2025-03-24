@@ -64,7 +64,12 @@ void loop() {
       bingusState = TURN;
       break;
     case LOOK: // turn and look for the aruco marker
-        lookForMarker();
+      while(markerPresent == false){
+        // rotate in short bursts until the marker is now in view
+        PiRhoPhi(0, 10);
+        delay(100);
+      }
+      bingusState = TURN; 
       break; 
     case TURN:
       // Turn first
@@ -91,6 +96,7 @@ void loop() {
           }
           else PiRhoPhi(0, -90);  // turn left
         }
+      bingusState = REPORT;
       break; 
     case REPORT:
       // Report position to PI
@@ -130,14 +136,5 @@ void receive() {
     instruction[msgLength] = Wire.read();
     msgLength++;
     //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
-  }
-}
-
-void lookForMarker(){
-  while(markerPresent == false){
-    // rotate in short bursts until the marker is now in view
-    PiRhoPhi(0, 10);
-    delay(100);
-
   }
 }
