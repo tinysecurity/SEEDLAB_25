@@ -17,9 +17,11 @@ volatile uint8_t offset;
 volatile uint8_t msgLength = 0;
 volatile uint8_t instruction[32] = {0};
 
-// Initialize desired position and angle
+// Initialize desired position, angle, if the marker is present, and arrow derection
 float desiredDistance = 0;
 float desiredAngle = 0;
+bool markerPresent = false;
+int arrowDirection = 0;
 
 // Set up state machine states
 typedef enum {
@@ -27,6 +29,7 @@ typedef enum {
 } bingusState_t;
 
 static bingusState_t bingusState = NORMAL;
+
 
 void setup() {
   Serial.begin(9600);
@@ -60,6 +63,9 @@ void loop() {
       desiredAngle = desiredAngle + 90;
       bingusState = TURN;
       break;
+    case LOOK: // turn and look for the aruco marker
+        lookForMarker();
+      break; 
     case TURN:
       // Turn first
       PiRhoPhi(0, desiredAngle);
@@ -78,6 +84,14 @@ void loop() {
       Serial.println("Done Moving");
       bingusState = REPORT;
       break;
+    case ARROW: // once in tolerance, turn the given arrow direction
+        if(inTolerance() == true){
+          if(arrowDirection == 0){ 
+            PiRhoPhi(0, 90);  // turn right
+          }
+          else PiRhoPhi(0, -90);  // turn left
+        }
+      break; 
     case REPORT:
       // Report position to PI
       bingusState = RESET;
@@ -116,5 +130,14 @@ void receive() {
     instruction[msgLength] = Wire.read();
     msgLength++;
     //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
+  }
+}
+
+void lookForMarker(){
+  while(markerPresent == false){
+    // rotate in short bursts until the marker is now in view
+    PiRhoPhi(0, 10);
+    delay(100);
+
   }
 }
