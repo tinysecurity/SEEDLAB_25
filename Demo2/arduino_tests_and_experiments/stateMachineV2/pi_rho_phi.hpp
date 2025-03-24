@@ -16,6 +16,7 @@
 float rad2AngVel(float, float, float, float);
 float rad2LinVel(float, float, float, float);
 void PiRhoPhi(float, float);
+bool inTolerance();
 
 // Initialize Motor Pin assignments
 const uint8_t motorDirection[2] = {7,8};
@@ -193,6 +194,17 @@ void PiRhoPhi(float rhoSetInches, float phiSetDegrees){
   prevTime = currTime;
 
   delay(desiredTs);
+}
+
+bool inTolerance(){
+  float deltaPhi = 1;
+  float deltaRho = .1;
+  if(((phi < phiSet + deltaPhi) && (phi > phiSet - deltaPhi)) && ((rho < rhoSet + deltaRho) && (rho < rhoSet - deltaRho))){
+    return true;
+  }
+  else{
+    return false;
+  }
 }
 
 #endif
