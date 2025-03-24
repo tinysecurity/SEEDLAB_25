@@ -72,7 +72,7 @@ void loop() {
     case READ_INST:
       // ------------ PUT CODE TO RECIEVE PI INSTRUCTIONS HERE --------
       // 
-
+      markerFound = false;
       // ------------------ Change State -----------------------------
       if(!markerFound) bingusState = LOOK;
       else if(markerFound && !atMarker) bingusState = TURN;
@@ -96,7 +96,7 @@ void loop() {
       if(inTolerance()) bingusState = DRIVE;
       break;
     case DRIVE:
-      desiredDistance = markerDistance;
+      desiredDistance = markerDistance - 18;
       desiredAngle = markerAngle;
       if(inTolerance()){
         atMarker = true;
