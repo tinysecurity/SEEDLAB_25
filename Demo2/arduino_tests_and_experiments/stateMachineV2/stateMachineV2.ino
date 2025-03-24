@@ -82,8 +82,10 @@ void loop() {
     case LOOK: // turn and look for the aruco marker
       desiredDistance = 0;
       desiredAngle = 10;
-      bingusState = WAIT;
-      waitOffSet = millis();
+      if(inTolerance()){
+        bingusState = DRIVE;
+        waitOffSet = millis();
+      }
       break;
     case WAIT:
       if(time - waitOffSet >= 25) bingusState = REPORT;
@@ -96,12 +98,18 @@ void loop() {
     case DRIVE:
       desiredDistance = markerDistance;
       desiredAngle = markerAngle;
-      if(inTolerance()) bingusState = REPORT;
+      if(inTolerance()){
+        atMarker = true;
+        bingusState = REPORT;
+      }
       break;
     case ARROW: // once in tolerance, turn the given arrow direction
       if(arrowDirection) desiredAngle = 90;
       else desired angle = -90;
-      bingusState = REPORT;
+      if(inTolerance()){
+        atMarker = true;
+        bingusState = REPORT;
+      }
       break; 
     case REPORT:
       // Report position to PI
