@@ -56,16 +56,20 @@ void loop() {
   while(currTime <= 2){
     PiRhoPhi(desiredDistance, desiredAngle);
   }
+  Serial.println("Done Waiting");
   desiredAngle = desiredAngle + 45;
   while(currTime <= 4){
     PiRhoPhi(desiredDistance, desiredAngle);
   }
-  desiredDistance = desiredDistance + 2;
+  Serial.println("Done Turning");
+  desiredDistance = desiredDistance + 24;
   while(currTime <= 6){
     PiRhoPhi(desiredDistance, desiredAngle);
   }
+  Serial.println("Done Moving");
   while(currTime > 6){
     currTime = 0;
+    timeOffSet = millis();
   }
 }
 

@@ -35,6 +35,7 @@ unsigned long desiredTs = 1; // old value 5, maybe match with delay used?
 float prevTime = 0;
 float currTime = 0;
 float time = 0;
+int timeOffSet = 0;
 
 // Initialize control values RHO
 float vBar = 0;
@@ -83,14 +84,14 @@ float rad2LinVel(float rads1, float time1, float rads2, float time2){
 // --------------- PI Controller for Rho and Phi ----------
 // Inputs are desired distance (in feet) and desired angle (in degrees)
 //  Time tracking and delay are handled in this function
-void PiRhoPhi(float rhoSetFeet, float phiSetDegrees){
+void PiRhoPhi(float rhoSetInches, float phiSetDegrees){
   
   // --------------- Convert to m and rads --------------------
   phiSet = phiSetDegrees * 1.045 * (PI/180); // 1.0625 (for half speed) 1.045 (for full speed) to account for undershoot
-  rhoSet = rhoSetFeet * 0.3048 * 1.017;
+  rhoSet = rhoSetInches * 0.0254 * 1.017;
 
   // ---------------- Current time --------------------------
-  currTime = (float)(millis())/1000;
+  currTime = (float)(millis() - timeOffSet)/1000;
   time = millis();
   
   // ----------------- PI Controller ----------------------------
