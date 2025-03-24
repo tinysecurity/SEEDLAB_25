@@ -71,10 +71,7 @@ void loop() {
     case READ_INST:
       // ------------ PUT CODE TO RECIEVE PI INSTRUCTIONS HERE --------
       // 
-      markerFound = true;
-      markerAngle = -90;
-      markerDistance = 60;
-      arrowDirection = true;
+      
       // ------------------ Change State -----------------------------
       if(!markerFound) bingusState = LOOK;
       else if(markerFound && !atMarker) bingusState = TURN;
@@ -136,6 +133,8 @@ void loop() {
       desiredAngle = 0;
       rhoErrorI = 0;
       phiErrorI = 0;
+      rhoDesired = 0;
+      phiDesired = 0;
       encoderPosition[LEFT] = 0;
       encoderPosition[RIGHT] = 0;
       bingusState = READ_INST;
