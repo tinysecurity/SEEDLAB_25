@@ -17,17 +17,16 @@ volatile uint8_t offset;
 volatile uint8_t msgLength = 0;
 volatile uint8_t instruction[32] = {0};
 
-// Initialize desired position, angle, if the marker is present, and arrow derection
+// Initialize desired position, angle
 float desiredDistance = 0;
 float desiredAngle = 0;
-bool markerPresent = false;
-int arrowDirection = 0;
+
 
 // Initialize variables to be read from I2C
 bool markerFound;
 float markerAngle;
 float markerDistance;
-bool arrowFound;
+bool arrowFound = true;
 bool arrowDirection;
 
 // Set up state machine states
@@ -39,8 +38,8 @@ static bingusState_t bingusState = BINGUS;
 
 // State control variables
 bool atMarker;
-int waitOffSet;
-int waitTime; // In milliseconds
+long int waitOffSet;
+long int waitTime = 3000; // In milliseconds
 
 void setup() {
   Serial.begin(9600);
@@ -72,7 +71,10 @@ void loop() {
     case READ_INST:
       // ------------ PUT CODE TO RECIEVE PI INSTRUCTIONS HERE --------
       // 
-      markerFound = false;
+      markerFound = true;
+      markerAngle = -90;
+      markerDistance = 60;
+      arrowDirection = true;
       // ------------------ Change State -----------------------------
       if(!markerFound) bingusState = LOOK;
       else if(markerFound && !atMarker) bingusState = TURN;
@@ -81,34 +83,46 @@ void loop() {
       break;
     case LOOK: // turn and look for the aruco marker
       desiredDistance = 0;
-      desiredAngle = 10;
+      desiredAngle = -45;
+      PiRhoPhi(desiredDistance, desiredAngle);
       if(inTolerance()){
-        bingusState = DRIVE;
+        bingusState = WAIT;
         waitOffSet = millis();
       }
       break;
     case WAIT:
-      if(time - waitOffSet >= 25) bingusState = REPORT;
+      time = millis();
+      if(time - waitOffSet >= waitTime) {
+        bingusState = REPORT;
+      }
       else bingusState = WAIT;
+      break;
     case TURN:
       desiredDistance = 0;
       desiredAngle = markerAngle;
+      PiRhoPhi(desiredDistance, desiredAngle);
       if(inTolerance()) bingusState = DRIVE;
       break;
     case DRIVE:
       desiredDistance = markerDistance - 18;
       desiredAngle = markerAngle;
+      PiRhoPhi(desiredDistance, desiredAngle);
       if(inTolerance()){
         atMarker = true;
-        bingusState = REPORT;
+        waitOffSet = millis();
+        bingusState = WAIT;
       }
       break;
     case ARROW: // once in tolerance, turn the given arrow direction
       if(arrowDirection) desiredAngle = 90;
-      else desired angle = -90;
+      else desiredAngle = -90;
+      desiredDistance = 0;
+      PiRhoPhi(desiredDistance, desiredAngle);
       if(inTolerance()){
-        atMarker = true;
-        bingusState = REPORT;
+        atMarker = false;
+        arrowFound = false;
+        waitOffSet = millis();
+        bingusState = WAIT;
       }
       break; 
     case REPORT:
@@ -120,7 +134,12 @@ void loop() {
       phi = 0;
       desiredDistance = 0;
       desiredAngle = 0;
+      rhoErrorI = 0;
+      phiErrorI = 0;
+      encoderPosition[LEFT] = 0;
+      encoderPosition[RIGHT] = 0;
       bingusState = READ_INST;
+      PiRhoPhi(desiredDistance, desiredAngle);
       break;
     case BINGUS:
     default:

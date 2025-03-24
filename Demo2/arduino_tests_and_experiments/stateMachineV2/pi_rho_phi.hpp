@@ -35,7 +35,7 @@ float actualSpeed[2] = {0,0};
 unsigned long desiredTs = 1; // old value 5, maybe match with delay used?
 float prevTime = 0;
 float currTime = 0;
-float time = 0;
+long int time = 0;
 int timeOffSet = 0;
 
 // Initialize control values RHO
@@ -128,7 +128,7 @@ void PiRhoPhi(float rhoSetInches, float phiSetDegrees){
 
   // ------------ Phi ----------------------
   // No folter for phi
-  phiDesired = phiSet;
+  phiDesired = alpha*phiDesired + (1-alpha)*phiSet;
 
   // proportional error phi
   phiErrorP = phiDesired - phi;
@@ -197,9 +197,9 @@ void PiRhoPhi(float rhoSetInches, float phiSetDegrees){
 }
 
 bool inTolerance(){
-  float deltaPhi = PI/180;
+  float deltaPhi = 0.1*PI/180;
   float deltaRho = .005;
-  if(((phi < phiSet + deltaPhi) && (phi > phiSet - deltaPhi)) && ((rho < rhoSet + deltaRho) && (rho < rhoSet - deltaRho))){
+  if(((phi <= phiSet + deltaPhi) && (phi >= phiSet - deltaPhi)) && ((rho <= rhoSet + deltaRho) && (rho >= rhoSet - deltaRho))){
     return true;
   }
   else{
