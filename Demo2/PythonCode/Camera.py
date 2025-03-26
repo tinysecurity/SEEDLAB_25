@@ -19,6 +19,7 @@ tvecs = np.asarray(data['tvecs'])
 class Camera:
     # class variable initalization
     DOWNSAMPLE = False
+    GREYSCALE = False
     SCALE = 0.5
     FLIP_IMAGE = True
     ALPHA = 1
@@ -60,7 +61,8 @@ class Camera:
         temp_image = cv2.undistort(temp_image,self.cameraMatrix,self.distCoeff,None,self.newCameraMatrix)
 
         # image processing
-        temp_image = cv2.cvtColor(temp_image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
+        if self.GREYSCALE
+            temp_image = cv2.cvtColor(temp_image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
         if self.DOWNSAMPLE:
             SCALE = 0.5
             temp_image = cv2.resize(temp_image, (0,0), fx=factor, fy=factor)
