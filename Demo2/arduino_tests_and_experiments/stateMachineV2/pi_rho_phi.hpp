@@ -16,6 +16,7 @@
 float rad2AngVel(float, float, float, float);
 float rad2LinVel(float, float, float, float);
 void PiRhoPhi(float, float);
+void resetPI();
 bool inTolerance();
 
 // Initialize Motor Pin assignments
@@ -205,6 +206,22 @@ bool inTolerance(){
   else{
     return false;
   }
+}
+
+void resetPI(){
+  // Set all values to 0
+  rho = 0;
+  phi = 0;
+  rhoErrorI = 0;
+  phiErrorI = 0;
+  rhoDesired = 0;
+  phiDesired = 0;
+  encoderPosition[LEFT] = 0;
+  encoderPosition[RIGHT] = 0;
+
+  // Run twice to clear prev and calculated values
+  PiRhoPhi(0, 0);
+  PiRhoPhi(0, 0);
 }
 
 #endif

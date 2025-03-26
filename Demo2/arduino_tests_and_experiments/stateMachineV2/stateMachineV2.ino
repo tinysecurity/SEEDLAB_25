@@ -38,6 +38,7 @@ static bingusState_t bingusState = BINGUS;
 
 // State control variables
 bool atMarker;
+bool adjusted;
 long int waitOffSet;
 long int waitTime = 3000; // In milliseconds
 
@@ -68,78 +69,106 @@ void setup() {
 void loop() {
   
   switch(bingusState) {
-    case READ_INST:
+    case READ_INST: // -------------  Read data from Pi ----------------
       // ------------ PUT CODE TO RECIEVE PI INSTRUCTIONS HERE --------
       // 
       
       // ------------------ Change State -----------------------------
       if(!markerFound) bingusState = LOOK;
       else if(markerFound && !atMarker) bingusState = TURN;
-      else if(atMarker && arrowFound) bingusState = ARROW;
+      else if(atMarker && !adjusted) bingusState = ADJUST;
+      else if(atMarker && adjusted && arrowFound) bingusState = ARROW;
       else bingusState = READ_INST;
       break;
-    case LOOK: // turn and look for the aruco marker
+
+    case LOOK: // ---------------- Turn and look for the aruco marker -----------
       desiredDistance = 0;
-      desiredAngle = -45;
+      desiredAngle = -15;
       PiRhoPhi(desiredDistance, desiredAngle);
+      
+      // ------------------ Change State -----------------------------
       if(inTolerance()){
         bingusState = WAIT;
         waitOffSet = millis();
       }
       break;
-    case WAIT:
+
+    case WAIT: // ----------------- Wait for a set amount of time --------------
       time = millis();
+      
+      // ------------------ Change State -----------------------------
       if(time - waitOffSet >= waitTime) {
         bingusState = REPORT;
       }
       else bingusState = WAIT;
       break;
-    case TURN:
+
+    case TURN: // ---------- First step of moving toward the marker, turn the robot to the correct angle -----------
       desiredDistance = 0;
       desiredAngle = markerAngle;
       PiRhoPhi(desiredDistance, desiredAngle);
+      
+      // ------------------ Change State -----------------------------
       if(inTolerance()) bingusState = DRIVE;
       break;
-    case DRIVE:
+
+    case DRIVE: // --------- Second Step of moving toward the marker, drive until within 1.5 feet of the marker --------
       desiredDistance = markerDistance - 18;
       desiredAngle = markerAngle;
       PiRhoPhi(desiredDistance, desiredAngle);
+      
+      // ------------------ Change State -----------------------------
       if(inTolerance()){
         atMarker = true;
         waitOffSet = millis();
         bingusState = WAIT;
       }
       break;
-    case ARROW: // once in tolerance, turn the given arrow direction
+
+    case ADJUST: // ------- Correct the angle to look striaght at the marker -----------
+      desiredDistance = 0;
+      desiredAngle = markerAngle;
+      PiRhoPhi(desiredDistance, desiredAngle);
+      
+      // ------------------ Change State -----------------------------
+      if(inTolerance()){
+        adjusted = true;
+        waitOffSet = millis();
+        bingusState = WAIT;
+      }
+      break;
+
+    case ARROW: // ---------- Once in tolerance, turn the given arrow direction ------------
       if(arrowDirection) desiredAngle = 90;
       else desiredAngle = -90;
       desiredDistance = 0;
       PiRhoPhi(desiredDistance, desiredAngle);
+
+      // ------------------ Change State -----------------------------
       if(inTolerance()){
         atMarker = false;
-        arrowFound = false;
+        adjusted = false;
         waitOffSet = millis();
         bingusState = WAIT;
       }
       break; 
-    case REPORT:
-      // Report position to PI
+
+    case REPORT: // Report data back to the Pi
+      // ------ Add code to report data back to the pi-------
+
+      // ------------------ Change State -----------------------------
       bingusState = RESET;
       break;
-    case RESET:
-      rho = 0;
-      phi = 0;
+
+    case RESET: // Reset the control system
+      resetPI();
       desiredDistance = 0;
       desiredAngle = 0;
-      rhoErrorI = 0;
-      phiErrorI = 0;
-      rhoDesired = 0;
-      phiDesired = 0;
-      encoderPosition[LEFT] = 0;
-      encoderPosition[RIGHT] = 0;
+      
+      // ------------------ Change State -----------------------------
       bingusState = READ_INST;
-      PiRhoPhi(desiredDistance, desiredAngle);
       break;
+      
     case BINGUS:
     default:
       bingusState = READ_INST;
