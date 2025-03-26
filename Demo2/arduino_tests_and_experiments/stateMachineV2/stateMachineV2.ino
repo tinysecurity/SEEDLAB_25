@@ -10,7 +10,7 @@
 
 #include <Wire.h>
 #include "encoder.hpp"
-#include "pi_rho_phi.hpp"
+#include "control_rho_phi.hpp"
 
 const uint8_t i2cAddress = 8;
 volatile uint8_t offset;
@@ -84,7 +84,7 @@ void loop() {
     case LOOK: // ---------------- Turn and look for the aruco marker -----------
       desiredDistance = 0;
       desiredAngle = -15;
-      PiRhoPhi(desiredDistance, desiredAngle);
+      controlRhoPhi(desiredDistance, desiredAngle);
       
       // ------------------ Change State -----------------------------
       if(inTolerance()){
@@ -106,7 +106,7 @@ void loop() {
     case TURN: // ---------- First step of moving toward the marker, turn the robot to the correct angle -----------
       desiredDistance = 0;
       desiredAngle = markerAngle;
-      PiRhoPhi(desiredDistance, desiredAngle);
+      controlRhoPhi(desiredDistance, desiredAngle);
       
       // ------------------ Change State -----------------------------
       if(inTolerance()) bingusState = DRIVE;
@@ -115,7 +115,7 @@ void loop() {
     case DRIVE: // --------- Second Step of moving toward the marker, drive until within 1.5 feet of the marker --------
       desiredDistance = markerDistance - 18;
       desiredAngle = markerAngle;
-      PiRhoPhi(desiredDistance, desiredAngle);
+      controlRhoPhi(desiredDistance, desiredAngle);
       
       // ------------------ Change State -----------------------------
       if(inTolerance()){
@@ -128,7 +128,7 @@ void loop() {
     case ADJUST: // ------- Correct the angle to look striaght at the marker -----------
       desiredDistance = 0;
       desiredAngle = markerAngle;
-      PiRhoPhi(desiredDistance, desiredAngle);
+      controlRhoPhi(desiredDistance, desiredAngle);
       
       // ------------------ Change State -----------------------------
       if(inTolerance()){
@@ -142,7 +142,7 @@ void loop() {
       if(arrowDirection) desiredAngle = 90;
       else desiredAngle = -90;
       desiredDistance = 0;
-      PiRhoPhi(desiredDistance, desiredAngle);
+      controlRhoPhi(desiredDistance, desiredAngle);
 
       // ------------------ Change State -----------------------------
       if(inTolerance()){
@@ -176,7 +176,7 @@ void loop() {
   }
 
   // ----------- Code that runs every loop -------------
-  PiRhoPhi(desiredDistance, desiredAngle);
+  controlRhoPhi(desiredDistance, desiredAngle);
 }
 
 

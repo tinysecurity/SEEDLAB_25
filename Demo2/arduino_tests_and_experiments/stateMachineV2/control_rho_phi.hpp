@@ -1,5 +1,5 @@
-#ifndef PI_RHO_PHI_HPP
-#define PI_RHO_PHI_HPP
+#ifndef CONTROL_RHO_PHI_HPP
+#define CONTROL_RHO_PHI_HPP
 
 #include <Arduino.h>
 #include "encoder.hpp" // able to read from encoders directly
@@ -15,8 +15,8 @@
 
 float rad2AngVel(float, float, float, float);
 float rad2LinVel(float, float, float, float);
-void PiRhoPhi(float, float);
-void resetPI();
+void controlRhoPhi(float, float);
+void resetControl();
 bool inTolerance();
 
 // Initialize Motor Pin assignments
@@ -86,7 +86,7 @@ float rad2LinVel(float rads1, float time1, float rads2, float time2){
 // --------------- PI Controller for Rho and Phi ----------
 // Inputs are desired distance (in feet) and desired angle (in degrees)
 //  Time tracking and delay are handled in this function
-void PiRhoPhi(float rhoSetInches, float phiSetDegrees){
+void controlRhoPhi(float rhoSetInches, float phiSetDegrees){
   
   // --------------- Convert to m and rads --------------------
   phiSet = phiSetDegrees * 1.045 * (PI/180); // 1.0625 (for half speed) 1.045 (for full speed) to account for undershoot
@@ -208,7 +208,7 @@ bool inTolerance(){
   }
 }
 
-void resetPI(){
+void resetControl(){
   // Set all values to 0
   rho = 0;
   phi = 0;
@@ -220,8 +220,8 @@ void resetPI(){
   encoderPosition[RIGHT] = 0;
 
   // Run twice to clear prev and calculated values
-  PiRhoPhi(0, 0);
-  PiRhoPhi(0, 0);
+  controlRhoPhi(0, 0);
+  controlRhoPhi(0, 0);
 }
 
 #endif
