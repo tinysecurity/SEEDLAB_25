@@ -161,7 +161,7 @@ void loop() {
       break;
 
     case RESET: // Reset the control system
-      resetPI();
+      resetControl();
       desiredDistance = 0;
       desiredAngle = 0;
       
