@@ -30,11 +30,11 @@ img = cv2.imread('OriginalImage.png')
 #Converting the image to HSV
 imgHSV = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
 #creating a range of green that we might see
-upperGreen = np.array([96, 211, 81])
+upperGreen = np.array([86, 211, 81])
 lowerGreen = np.array([60, 89, 39])
 
-#[84, 255, 255]
-#[60, 160, 90]
+#[96, 211, 81]
+#[60, 89, 39]
 
 #apply mask to a new array
 mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
