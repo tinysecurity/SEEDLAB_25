@@ -36,7 +36,7 @@ class Camera:
         sleep(0.5)
         # initalize variables
         self.arucoDict = []
-        self.closestDict = []
+        self.closestDict = dict()
         #set variables from YAML file
         self.cameraMatrix = np.asarray(data['camera_matrix'])
         self.distCoeff = np.asarray(data['dist_coeff'])
@@ -61,7 +61,7 @@ class Camera:
         temp_image = cv2.undistort(temp_image,self.cameraMatrix,self.distCoeff,None,self.newCameraMatrix)
 
         # image processing
-        if self.GREYSCALE
+        if self.GREYSCALE:
             temp_image = cv2.cvtColor(temp_image, cv2.COLOR_BGR2GRAY) #change from color to greyscale
         if self.DOWNSAMPLE:
             SCALE = 0.5
