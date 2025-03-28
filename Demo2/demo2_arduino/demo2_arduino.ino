@@ -1,3 +1,25 @@
+#include "custom_i2c.hpp"
+
+RecieveI2C myi2c;
+
+void setup() {
+  Serial.begin(9600);
+  myi2c.init()
+}
+
+void loop() {
+  if (myi2c.newData) {
+    Serial.print("[");
+    for (uint8_t i = 0; i++; i < MAX_MESSAGE_LENGTH-1) {
+      Serial.print(instruction[i]);
+      Serial.print(", ");
+    }
+    Serial.print(instruction[MAX_MESSAGE_LENGTH-1]);
+    Serial.print("]");
+    Serial.print("\r\n");
+  }
+}
+/*
 #ifndef MACRO_DEFAULTS
 #define MACRO_DEFAULTS
 #define LEFT 0
@@ -60,3 +82,4 @@ void receive() {
     //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
   }
 }
+*/
