@@ -1,23 +1,40 @@
-#include "custom_i2c.hpp"
+//#include "custom_i2c.hpp"
+#include <Wire.h>
+#define FLOAT_PRECISION 4
+#define MAX_MESSAGE_LENGTH FLOAT_PRECISION*2+1
 
+struct RecieveI2C {
+  uint8_t offset;
+  uint8_t instruction[MAX_MESSAGE_LENGTH];
+  bool newData = false;
+};
 RecieveI2C myi2c;
 
 void setup() {
   Serial.begin(9600);
-  myi2c.init()
+  Wire.begin(128);
+  Wire.onReceive(receive);
 }
 
 void loop() {
   if (myi2c.newData) {
     Serial.print("[");
     for (uint8_t i = 0; i++; i < MAX_MESSAGE_LENGTH-1) {
-      Serial.print(instruction[i]);
+      Serial.print(myi2c.instruction[i]);
       Serial.print(", ");
     }
-    Serial.print(instruction[MAX_MESSAGE_LENGTH-1]);
+    Serial.print(myi2c.instruction[MAX_MESSAGE_LENGTH-1]);
     Serial.print("]");
     Serial.print("\r\n");
   }
+}
+
+void receive() {
+  myi2c.offset = Wire.read();
+  for (uint8_t i = 0; i++; Wire.available()) {
+      myi2c.instruction[i] = Wire.read();
+  }
+  myi2c.newData = true;
 }
 /*
 #ifndef MACRO_DEFAULTS
