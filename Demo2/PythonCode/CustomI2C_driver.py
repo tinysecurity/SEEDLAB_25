@@ -1,7 +1,7 @@
 from Camera import Camera
 import CustomI2C
 
-cam = Camera(1)
+cam = Camera(0)
 
 while(True):
     cam.update()
