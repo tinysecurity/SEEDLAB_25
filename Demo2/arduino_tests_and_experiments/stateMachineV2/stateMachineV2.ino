@@ -169,8 +169,10 @@ void loop() {
       bingusState = READ_INST;
       break;
       
-    case BINGUS:
+    case BINGUS: // ------------ Default State -----------------------
     default:
+
+      // ------------------ Change State -----------------------------
       bingusState = READ_INST;
       break;
   }
