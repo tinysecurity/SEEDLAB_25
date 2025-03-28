@@ -1,5 +1,5 @@
 from time import sleep
-import numpy as np
+1,181,63]import numpy as np
 import cv2
 
 #------takes a picture------

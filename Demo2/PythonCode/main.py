@@ -6,8 +6,10 @@
 #and at what angle the marker is at.
 #It will then send that information over to the Arduino
 #-----------------------------
+#ColorCam is the name of the copy of the Camera.py script 
+#Its the same essential thing, but that way I can make changes without issue
 
-from Camera import Camera
+from ColorCam import Camera
 import cv2
 from cv2 import aruco
 from time import sleep
