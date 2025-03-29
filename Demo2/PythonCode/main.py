@@ -23,8 +23,9 @@ import threading
 angle = 10000
 lengthOf = 10000
 markers = 'start'
-angleAndLength = [10000,10000]
-tempAngleAndLength = [10000,10000]
+
+I2CArray = [10000,10000,10000,10000] #[markerFound, arrowColor, angle, length]
+tempI2CArray = [10000,10000,10000,10000] #[markerFound, arrowColor, angle, length]
 
 #calling Camera class
 cam = Camera(0)
@@ -75,32 +76,35 @@ while True:
 
     if len(cam.arucoDict) != 0: #if a marker is detected
         markers = "Markers Found"
+        I2CArray[0] = 1 #set marker found to true
+        I2CArray[1] = cam.arucoDict[0]["arrowColor"]
 
         if ((angle + 0.5 <= cam.arucoDict[0]["angle"]) or (angle - 0.5 >= cam.arucoDict[0]["angle"])):
             angle = round(cam.arucoDict[0]["angle"],2) #updates the angle variable if there was a change in angle
             q.put(angle) #puts angle into queue to be displayed on LCD
             markers = "Markers found"
-            tempAngleAndLength[0] = angle
+            tempI2CArray[2] = angle
 
         if ((lengthOf + 0.5 <= cam.arucoDict[0]["distance"]) or (lengthOf - 0.5 >= cam.arucoDict[0]["distance"])):
             lengthOf = round(cam.arucoDict[0]["distance"],2) #updates the distance variable if there was a change in distance
             markers = "Markers found"
-            tempAngleAndLength[1] = lengthOf
+            tempI2CArray[3] = lengthOf
 
-        if (tempAngleAndLength[0] != angleAndLength[0]) or (tempAngleAndLength[1] != angleAndLength[1]):
-            angleAndLength[0] = tempAngleAndLength[0]
-            angleAndLength[1] = tempAngleAndLength[1]
-            print(angleAndLength)
-            #i2cArduino.write_block_data(ARD_ADDR,offset,angleAndLength) #sends angle and distance to Arduino
+        if (tempI2CArray[2] != I2CArray[2]) or (tempI2CArray[3] != I2CArray[3]):
+            I2CArray[2] = tempI2CArray[2]
+            I2CArray[3] = tempI2CArray[3]
+            print(I2CArray)
+            #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
 
     if len(cam.arucoDict) == 0: #if no markers are detected
         if markers != "No markers found":
             markers = "No markers found"
-            print(markers)
             q.put(markers) #put no marker found message into queue
 
             #reset values
             angle = 10000
             lengthOf = 10000
-            angleAndLength = [10000,10000]
+            I2CArray = [0,1,10000,10000]
+            print(I2CArray)
+            #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
         
