@@ -12,7 +12,7 @@ RecieveI2C myi2c;
 
 void setup() {
   Serial.begin(9600);
-  Wire.begin(16);
+  Wire.begin(8);
   Wire.onReceive(receive);
 }
 
