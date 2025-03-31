@@ -17,7 +17,7 @@ def floatToInts(data, precision):
     dataAsInt = np.array(data).astype(precisionType).view(np.uint32)
     ints = []
     # big endian :)
-    for i in range(precision-1,0,-1):
+    for i in range(precision-1,-1,-1):
         shift = i * 8
         mask = 0xFF << shift
         ints.append((dataAsInt & mask) >> shift)

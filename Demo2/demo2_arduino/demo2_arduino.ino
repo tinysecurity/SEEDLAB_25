@@ -11,18 +11,17 @@ struct RecieveI2C {
   float angle;
 };
 
-void decodeI2C(RecieveI2C data) {
-  uint8_t flags = data.instruction[0];
+void decodeI2C(uint8_t instruction[MAX_MESSAGE_LENGTH], float* distance, float* angle) {
+  uint8_t flags = instruction[0];
   // note: due to how floats work in C++, half-floats aren't supported (2 byte). Therefore I'm assuming a 4-byte float
   uint8_t distanceInt[FLOAT_PRECISION];
   uint8_t angleInt[FLOAT_PRECISION];
   for (uint8_t i = 0; i++; i < FLOAT_PRECISION) {
-    distanceInt[i] = data.instruction[i+1];
-    angleInt[i] = data.instruction[i+1+FLOAT_PRECISION];c
+    distanceInt[i] = instruction[i+1];
+    angleInt[i] = instruction[i+1+FLOAT_PRECISION];
   }
-  memcpy(&data.distance, &distanceInt, FLOAT_PRECISION);
-  memcpy(&data.angle, &angleInt, FLOAT_PRECISION);
-  return data;
+  memcpy(&distance, &distanceInt, FLOAT_PRECISION);
+  memcpy(&angle, &angleInt, FLOAT_PRECISION);
 }
 
 RecieveI2C myi2c;
@@ -52,7 +51,10 @@ void receive() {
       myi2c.instruction[i] = Wire.read();
   }
   myi2c.newData = true;
-  myi2c = decodeI2C(myi2c);
+  float* distance; float* angle;
+  decodeI2C(myi2c.instruction, distance, angle);
+  myi2c.distance = *distance;
+  myi2c.angle = *angle;
 }
 /*
 #ifndef MACRO_DEFAULTS
