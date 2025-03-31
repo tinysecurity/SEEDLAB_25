@@ -17,8 +17,8 @@ void decodeI2C(uint8_t instruction[MAX_MESSAGE_LENGTH], float* distance, float* 
   uint8_t distanceInt[FLOAT_PRECISION];
   uint8_t angleInt[FLOAT_PRECISION];
   for (uint8_t i = 0; i++; i < FLOAT_PRECISION) {
-    distanceInt[i] = instruction[i+1];
-    angleInt[i] = instruction[i+1+FLOAT_PRECISION];
+    distanceInt[i] = instruction[i];
+    angleInt[i] = instruction[i+FLOAT_PRECISION];
   }
   memcpy(&distance, &distanceInt, FLOAT_PRECISION);
   memcpy(&angle, &angleInt, FLOAT_PRECISION);
@@ -42,6 +42,7 @@ void loop() {
     Serial.print(myi2c.instruction[MAX_MESSAGE_LENGTH-1]);
     Serial.print("]");
     Serial.print("\r\n");
+    myi2c.newData = false;
   }
 }
 
@@ -49,6 +50,7 @@ void receive() {
   myi2c.offset = Wire.read();
   for (uint8_t i = 0; i++; Wire.available()) {
       myi2c.instruction[i] = Wire.read();
+      Serial.print(myi2c.instruction[i]);
   }
   myi2c.newData = true;
   float* distance; float* angle;
