@@ -18,6 +18,7 @@ import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 from smbus2 import SMBus
 import queue
 import threading
+import CustomI2C
 
 #starting and reset values
 angle = 10000
@@ -93,8 +94,9 @@ while True:
         if (tempI2CArray[2] != I2CArray[2]) or (tempI2CArray[3] != I2CArray[3]):
             I2CArray[2] = tempI2CArray[2]
             I2CArray[3] = tempI2CArray[3]
-            print(I2CArray)
+            #print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
+            CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)
 
     if len(cam.arucoDict) == 0: #if no markers are detected
         if markers != "No markers found":
@@ -105,6 +107,6 @@ while True:
             angle = 10000
             lengthOf = 10000
             I2CArray = [0,1,10000,10000]
-            print(I2CArray)
+            #print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
-        
+            CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)
