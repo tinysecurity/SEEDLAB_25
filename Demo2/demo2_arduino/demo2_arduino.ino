@@ -46,7 +46,7 @@ void loop() {
   }
 }
 
-void receive() {
+void receive(int howMany) {
   myi2c.offset = Wire.read();
   for (uint8_t i = 0; i++; Wire.available()) {
       myi2c.instruction[i] = Wire.read();
