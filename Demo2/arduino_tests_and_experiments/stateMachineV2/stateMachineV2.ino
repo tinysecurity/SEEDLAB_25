@@ -64,7 +64,7 @@ static bingusState_t bingusState = BINGUS;
 bool atMarker;
 bool adjusted;
 long int waitOffSet;
-long int waitTime = 2250; // In milliseconds
+long int waitTime = 10000; // In milliseconds
 
 void setup() {
   Serial.begin(9600);
@@ -98,8 +98,8 @@ void loop() {
       if(myi2c.newData){
         markerDistance = myi2c.distance;
         markerAngle = myi2c.angle;
-        if(markerDistance == 0) markerfound = false;
-        else makerFound = true;
+        if(markerDistance == 0) markerFound = false;
+        else markerFound = true;
         myi2c.newData = false;
       }
 
@@ -218,7 +218,7 @@ void receive(int howMany) {
   uint8_t i = 0;
   while (Wire.available()) {
     myi2c.instruction[i] = Wire.read();
-    Serial.println(myi2c.instruction[i]);
+    //Serial.println(myi2c.instruction[i]);
     i++;
   }
   /*for (uint8_t i = 0; i++; Wire.available()) {
@@ -230,4 +230,5 @@ void receive(int howMany) {
   decodeI2C(myi2c.instruction, distance, angle);
   myi2c.distance = *distance;
   myi2c.angle = *angle;
+  Serial.println(myi2c.distance);
 }
