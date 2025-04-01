@@ -11,6 +11,9 @@
 #define RIGHT 1
 #define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel 
 #define WIDTH_OF_WHEELBASE 0.3683 // NOTE: we need wheelbase width to calculate angle
+#define FLOAT_PRECISION 4
+#define MAX_MESSAGE_LENGTH FLOAT_PRECISION*2+1
+#define ADDRESS 8
 #endif
 
 float rad2AngVel(float, float, float, float);

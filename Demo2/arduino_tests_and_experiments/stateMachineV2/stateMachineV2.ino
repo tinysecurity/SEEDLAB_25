@@ -2,8 +2,11 @@
 #define MACRO_DEFAULTS
 #define LEFT 0
 #define RIGHT 1
-#define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel
+#define WHEEL_RADIUS 0.0762 // NOTE: we need the wheel radius to calculate linear vel 
 #define WIDTH_OF_WHEELBASE 0.3683 // NOTE: we need wheelbase width to calculate angle
+#define FLOAT_PRECISION 4
+#define MAX_MESSAGE_LENGTH FLOAT_PRECISION*2+1
+#define ADDRESS 8
 #endif
 
 
@@ -12,10 +15,31 @@
 #include "encoder.hpp"
 #include "control_rho_phi.hpp"
 
-const uint8_t i2cAddress = 8;
-volatile uint8_t offset;
-volatile uint8_t msgLength = 0;
-volatile uint8_t instruction[32] = {0};
+// Initialize I2C struct
+struct RecieveI2C {
+  uint8_t offset;
+  uint8_t instruction[MAX_MESSAGE_LENGTH];
+  bool newData = false;
+  float distance;
+  float angle;
+};
+
+// Initialize the I2C decode function
+void decodeI2C(uint8_t instruction[MAX_MESSAGE_LENGTH], float* distance, float* angle) {
+  uint8_t flags = instruction[0];
+  // note: due to how floats work in C++, half-floats aren't supported (2 byte). Therefore I'm assuming a 4-byte float
+  uint8_t distanceInt[FLOAT_PRECISION];
+  uint8_t angleInt[FLOAT_PRECISION];
+  for (uint8_t i = 0; i++; i < FLOAT_PRECISION) {
+    distanceInt[i] = instruction[i];
+    angleInt[i] = instruction[i+FLOAT_PRECISION];
+  }
+  memcpy(&distance, &distanceInt, FLOAT_PRECISION);
+  memcpy(&angle, &angleInt, FLOAT_PRECISION);
+}
+
+// Initialize I2C
+RecieveI2C myi2c;
 
 // Initialize desired position, angle
 float desiredDistance = 0;
@@ -40,7 +64,7 @@ static bingusState_t bingusState = BINGUS;
 bool atMarker;
 bool adjusted;
 long int waitOffSet;
-long int waitTime = 3000; // In milliseconds
+long int waitTime = 2250; // In milliseconds
 
 void setup() {
   Serial.begin(9600);
@@ -60,7 +84,7 @@ void setup() {
   digitalWrite(motorDirection[RIGHT], HIGH);
 
   // ---------- I2C ----------
-  Wire.begin(i2cAddress);
+  Wire.begin(ADDRESS);
   Wire.onReceive(receive);
 }
 
@@ -71,8 +95,14 @@ void loop() {
   switch(bingusState) {
     case READ_INST: // -------------  Read data from Pi ----------------
       // ------------ PUT CODE TO RECIEVE PI INSTRUCTIONS HERE --------
-      // 
-      
+      if(myi2c.newData){
+        markerDistance = myi2c.distance;
+        markerAngle = myi2c.angle;
+        if(markerDistance == 0) markerfound = false;
+        else makerFound = true;
+        myi2c.newData = false;
+      }
+
       // ------------------ Change State -----------------------------
       if(!markerFound) bingusState = LOOK;
       else if(markerFound && !atMarker) bingusState = TURN;
@@ -83,7 +113,7 @@ void loop() {
 
     case LOOK: // ---------------- Turn and look for the aruco marker -----------
       desiredDistance = 0;
-      desiredAngle = -15;
+      desiredAngle = -45;
       controlRhoPhi(desiredDistance, desiredAngle);
       
       // ------------------ Change State -----------------------------
@@ -181,16 +211,23 @@ void loop() {
   controlRhoPhi(desiredDistance, desiredAngle);
 }
 
-
-
-void receive() {
-  // Set the offset, this will always be the first byte.
-  offset = Wire.read();
-
-  // If there is information after the offset, it is telling us more about the command.
+// Receive function for I2C communication
+void receive(int howMany) {
+  myi2c.offset = Wire.read();
+  Wire.read();
+  uint8_t i = 0;
   while (Wire.available()) {
-    instruction[msgLength] = Wire.read();
-    msgLength++;
-    //reply = (instruction[0]) + 100; //the reply that is sent to the Pi is the length of the original message
+    myi2c.instruction[i] = Wire.read();
+    Serial.println(myi2c.instruction[i]);
+    i++;
   }
+  /*for (uint8_t i = 0; i++; Wire.available()) {
+      myi2c.instruction[i] = Wire.read();
+      Serial.print(myi2c.instruction[i]);
+  }*/
+  myi2c.newData = true;
+  float* distance; float* angle;
+  decodeI2C(myi2c.instruction, distance, angle);
+  myi2c.distance = *distance;
+  myi2c.angle = *angle;
 }
