@@ -77,6 +77,7 @@ while True:
 
     if len(cam.arucoDict) != 0: #if a marker is detected
         markers = "Markers Found"
+        #print("Marker found")
         I2CArray[0] = 1 #set marker found to true
         I2CArray[1] = cam.arucoDict[0]["arrowColor"]
 

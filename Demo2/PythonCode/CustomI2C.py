@@ -33,5 +33,6 @@ def sendMessage(cameraDict, address, precision, busIdx):
         data = [(1 << 1) + (0 | arrow)]
         data.extend(floatToInts(cameraDict["distance"], precision))
         data.extend(floatToInts(cameraDict["angle"], precision))
+    #SMBus(busIdx).i2c_rdwr(i2c_msg.write(address, data))
     SMBus(busIdx).write_block_data(address, 0, data)
     print(data)

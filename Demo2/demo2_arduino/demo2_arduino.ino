@@ -36,22 +36,29 @@ void loop() {
   if (myi2c.newData) {
     Serial.print("[");
     for (uint8_t i = 0; i++; i < MAX_MESSAGE_LENGTH-1) {
-      Serial.print(myi2c.instruction[i]);
-      Serial.print(", ");
+      //Serial.print(myi2c.instruction[i]);
+      //Serial.print(", ");
     }
-    Serial.print(myi2c.instruction[MAX_MESSAGE_LENGTH-1]);
-    Serial.print("]");
-    Serial.print("\r\n");
+    //Serial.print(myi2c.instruction[MAX_MESSAGE_LENGTH-1]);
+    //Serial.print("]");
+    Serial.print("DONE\r\n");
     myi2c.newData = false;
   }
 }
 
 void receive(int howMany) {
   myi2c.offset = Wire.read();
-  for (uint8_t i = 0; i++; Wire.available()) {
+  uint8_t nine = Wire.read();
+  uint8_t i = 0;
+  while (Wire.available()) {
+    myi2c.instruction[i] = Wire.read();
+    Serial.println(myi2c.instruction[i]);
+    i++;
+  }
+  /*for (uint8_t i = 0; i++; Wire.available()) {
       myi2c.instruction[i] = Wire.read();
       Serial.print(myi2c.instruction[i]);
-  }
+  }*/
   myi2c.newData = true;
   float* distance; float* angle;
   decodeI2C(myi2c.instruction, distance, angle);

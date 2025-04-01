@@ -84,6 +84,10 @@ class Camera:
 
         upperGreen = np.array([86, 211, 81])
         lowerGreen = np.array([60, 89, 39])
+
+        #upperGreen = np.array([86, 211, 81])
+        #lowerGreen = np.array([60, 89, 39])
+
         mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
         kernel = np.ones((5,5),np.uint8)
         closing = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
@@ -118,7 +122,7 @@ class Camera:
 
         for index, cnt in enumerate(contoursRed):
             contour_area = cv2.contourArea(cnt)
-            if contour_area > 300:
+            if contour_area > 170:
                 x, y, w, h = cv2.boundingRect(cnt)
                 center = int(x+w/2),int(y+h/2)
                 redArrowAreas = np.append(redArrowAreas,contour_area)
