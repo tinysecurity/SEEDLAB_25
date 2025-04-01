@@ -22,21 +22,13 @@ struct RecieveI2C {
   bool newData = false;
   float distance;
   float angle;
+  bool marker;
+  uint8_t color;
 };
-
-// Initialize the I2C decode function
-void decodeI2C(uint8_t instruction[MAX_MESSAGE_LENGTH], float* distance, float* angle) {
-  uint8_t flags = instruction[0];
-  // note: due to how floats work in C++, half-floats aren't supported (2 byte). Therefore I'm assuming a 4-byte float
-  uint8_t distanceInt[FLOAT_PRECISION];
-  uint8_t angleInt[FLOAT_PRECISION];
-  for (uint8_t i = 0; i++; i < FLOAT_PRECISION) {
-    distanceInt[i] = instruction[i];
-    angleInt[i] = instruction[i+FLOAT_PRECISION];
-  }
-  memcpy(&distance, &distanceInt, FLOAT_PRECISION);
-  memcpy(&angle, &angleInt, FLOAT_PRECISION);
-}
+union Unsflinteger {
+  unsigned int i;
+  float f;
+};
 
 // Initialize I2C
 RecieveI2C myi2c;
@@ -213,22 +205,24 @@ void loop() {
 
 // Receive function for I2C communication
 void receive(int howMany) {
-  myi2c.offset = Wire.read();
-  Wire.read();
-  uint8_t i = 0;
-  while (Wire.available()) {
-    myi2c.instruction[i] = Wire.read();
-    //Serial.println(myi2c.instruction[i]);
-    i++;
-  }
-  /*for (uint8_t i = 0; i++; Wire.available()) {
+  myi2c.offset = Wire.read(); // offset
+  Wire.read(); // address+1, n/a as 1:1 transmitter:sink
+  for (uint8_t i = 0; Wire.available(); i++) {
       myi2c.instruction[i] = Wire.read();
-      Serial.print(myi2c.instruction[i]);
-  }*/
+      //Serial.print(myi2c.instruction[i]);
+  }
   myi2c.newData = true;
-  float* distance; float* angle;
-  decodeI2C(myi2c.instruction, distance, angle);
-  myi2c.distance = *distance;
-  myi2c.angle = *angle;
-  Serial.println(myi2c.distance);
+  // NOTE: hardcoding to 4 bytes for convenience
+  Unsflinteger distanceConv;
+  Unsflinteger angleConv;
+  distanceConv.i = (myi2c.instruction[1]<<24) + (myi2c.instruction[2]<<16) + (myi2c.instruction[3]<<8) + (myi2c.instruction[4]);
+  angleConv.i = (myi2c.instruction[5]<<24) + (myi2c.instruction[6]<<16) + (myi2c.instruction[7]<<8) + (myi2c.instruction[8]);
+  myi2c.distance = distanceConv.f;
+  myi2c.angle = angleConv.f;
+  myi2c.color = myi2c.instruction[0];
+  if (myi2c.instruction[0] == 0) {
+    myi2c.marker = false;
+  } else {
+    myi2c.marker = true;
+  }
 }

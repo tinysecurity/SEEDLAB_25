@@ -34,5 +34,8 @@ def sendMessage(cameraDict, address, precision, busIdx):
         data.extend(floatToInts(cameraDict["distance"], precision))
         data.extend(floatToInts(cameraDict["angle"], precision))
     #SMBus(busIdx).i2c_rdwr(i2c_msg.write(address, data))
-    SMBus(busIdx).write_block_data(address, 0, data)
+    try:
+        SMBus(busIdx).write_block_data(address, 0, data)
+    except:
+        print("Communication issue, I2C threw an exception...")
     print(data)
