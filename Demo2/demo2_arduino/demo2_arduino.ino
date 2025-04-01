@@ -2,6 +2,7 @@
 #include <Wire.h>
 #define FLOAT_PRECISION 4
 #define MAX_MESSAGE_LENGTH FLOAT_PRECISION*2+1
+#define ADDRESS 8
 
 struct RecieveI2C {
   uint8_t offset;
@@ -36,19 +37,18 @@ void loop() {
   if (myi2c.newData) {
     Serial.print("[");
     for (uint8_t i = 0; i++; i < MAX_MESSAGE_LENGTH-1) {
-      //Serial.print(myi2c.instruction[i]);
-      //Serial.print(", ");
+      Serial.print(myi2c.instruction[i]);
+      Serial.print(", ");
     }
-    //Serial.print(myi2c.instruction[MAX_MESSAGE_LENGTH-1]);
-    //Serial.print("]");
-    Serial.print("DONE\r\n");
+    Serial.print(myi2c.instruction[MAX_MESSAGE_LENGTH-1]);
+    Serial.print("]\r\n");
     myi2c.newData = false;
   }
 }
 
 void receive(int howMany) {
   myi2c.offset = Wire.read();
-  uint8_t nine = Wire.read();
+  Wire.read(); // get rid of address, only one src/snk
   uint8_t i = 0;
   while (Wire.available()) {
     myi2c.instruction[i] = Wire.read();

@@ -28,9 +28,9 @@ def sendMessage(cameraDict, address, precision, busIdx):
     if len(cameraDict) == 0:
         data = [0] * (precision*2+1)
     else:
-        arrow = 1 # dummy variable pointing right
+        arrow = cameraDict["arrowColor"] # get if detected and direction
         # the other variable is if data is detected, which is always yes at this point
-        data = [(1 << 1) + (0 | arrow)]
+        data = [(0 | arrow)] # template for bitmasking later
         data.extend(floatToInts(cameraDict["distance"], precision))
         data.extend(floatToInts(cameraDict["angle"], precision))
     #SMBus(busIdx).i2c_rdwr(i2c_msg.write(address, data))
