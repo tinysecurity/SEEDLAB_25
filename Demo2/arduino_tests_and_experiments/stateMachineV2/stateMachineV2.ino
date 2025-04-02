@@ -44,6 +44,7 @@ float markerAngle;
 float markerDistance;
 bool arrowFound = true;
 bool arrowDirection;
+uint8_t color;
 
 // Set up state machine states
 typedef enum {
@@ -90,8 +91,25 @@ void loop() {
       if(myi2c.newData){
         markerDistance = myi2c.distance;
         markerAngle = myi2c.angle;
-        if(markerDistance == 0) markerFound = false;
-        else markerFound = true;
+        markerFound = myi2c.marker;
+        if(markerDistance <= 18) atMarker = true;
+        else if(markerDistance > 18) atMarker = false;
+        color = myi2c.color;
+        switch(color){
+          case 0:
+          case 1:
+            arrowFound = false;
+            break;
+          case 2:
+            arrowDirection = LEFT;
+            break;
+          case 3:
+            arrowDirection = RIGHT;
+            break;
+          default:
+            arrowFound = false;
+            break;
+        }
         myi2c.newData = false;
       }
 
@@ -161,8 +179,8 @@ void loop() {
       break;
 
     case ARROW: // ---------- Once in tolerance, turn the given arrow direction ------------
-      if(arrowDirection) desiredAngle = 90;
-      else desiredAngle = -90;
+      if(arrowDirection) desiredAngle = -90;
+      else desiredAngle = 90;
       desiredDistance = 0;
       controlRhoPhi(desiredDistance, desiredAngle);
 
