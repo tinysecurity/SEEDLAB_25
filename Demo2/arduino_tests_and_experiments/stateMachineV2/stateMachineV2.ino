@@ -42,8 +42,8 @@ float desiredAngle = 0;
 bool markerFound;
 float markerAngle;
 float markerDistance;
-bool arrowFound = true;
-bool arrowDirection;
+bool arrowFound = false;
+bool arrowDirection = LEFT;
 uint8_t color;
 
 // Set up state machine states
