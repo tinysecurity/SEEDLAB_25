@@ -16,6 +16,8 @@ distCoeff = np.asarray(data['dist_coeff'])
 rvecs = np.asarray(data['rvecs'])
 tvecs = np.asarray(data['tvecs'])
 
+
+
 class Camera:
     # class variable initalization
     DOWNSAMPLE = False
@@ -82,8 +84,8 @@ class Camera:
         imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
 
 
-        upperGreen = np.array([86, 211, 81])
-        lowerGreen = np.array([60, 89, 39])
+        upperGreen = np.array([80, 211, 81])
+        lowerGreen = np.array([55, 89, 39])
 
         #upperGreen = np.array([86, 211, 81])
         #lowerGreen = np.array([60, 89, 39])
@@ -92,14 +94,14 @@ class Camera:
         kernel = np.ones((5,5),np.uint8)
         closing = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
         contoursGreen,_ = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        #cv2.drawContours(self.image,contoursGreen,-1,(255,0,0),3)
+        cv2.drawContours(self.image,contoursGreen,-1,(255,0,0),3)
 
         greenArrowCenters = np.empty((0,2))
         greenArrowAreas = np.empty((0))
 
         for index, cnt in enumerate(contoursGreen):
             contour_area = cv2.contourArea(cnt)
-            if contour_area > 300:
+            if contour_area > 150:
                 x, y, w, h = cv2.boundingRect(cnt)
                 center = int(x+w/2),int(y+h/2)
                 greenArrowAreas = np.append(greenArrowAreas,contour_area)
@@ -122,7 +124,7 @@ class Camera:
 
         for index, cnt in enumerate(contoursRed):
             contour_area = cv2.contourArea(cnt)
-            if contour_area > 170:
+            if contour_area > 150:
                 x, y, w, h = cv2.boundingRect(cnt)
                 center = int(x+w/2),int(y+h/2)
                 redArrowAreas = np.append(redArrowAreas,contour_area)
@@ -184,6 +186,8 @@ class Camera:
                     #print("Red Arrow Closest")
                     arrowColor = 3
 
+
+
                     
                 # define dictionary values
                 # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
@@ -223,3 +227,4 @@ class Camera:
         # wait for q to quit python instance
         if cv2.waitKey(33) == ord('q'):
             quit()
+        
