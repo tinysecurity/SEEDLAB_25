@@ -26,7 +26,7 @@ struct RecieveI2C {
   uint8_t color;
 };
 union Unsflinteger {
-  unsigned int i;
+  unsigned long i;
   float f;
 };
 
@@ -57,7 +57,7 @@ static bingusState_t bingusState = BINGUS;
 bool atMarker;
 bool adjusted;
 long int waitOffSet;
-long int waitTime = 10000; // In milliseconds
+long int waitTime = 1500; // In milliseconds
 
 void setup() {
   Serial.begin(9600);
@@ -101,9 +101,11 @@ void loop() {
             arrowFound = false;
             break;
           case 2:
+            arrowFound = true;
             arrowDirection = LEFT;
             break;
           case 3:
+            arrowFound = true;
             arrowDirection = RIGHT;
             break;
           default:
@@ -122,8 +124,8 @@ void loop() {
       break;
 
     case LOOK: // ---------------- Turn and look for the aruco marker -----------
-      desiredDistance = 0;
-      desiredAngle = -45;
+      if(arrowDirection) desiredAngle = -45;
+      else desiredAngle = 45;
       controlRhoPhi(desiredDistance, desiredAngle);
       
       // ------------------ Change State -----------------------------
@@ -174,7 +176,7 @@ void loop() {
       if(inTolerance()){
         adjusted = true;
         waitOffSet = millis();
-        bingusState = WAIT;
+        bingusState = REPORT;
       }
       break;
 
@@ -233,10 +235,13 @@ void receive(int howMany) {
   // NOTE: hardcoding to 4 bytes for convenience
   Unsflinteger distanceConv;
   Unsflinteger angleConv;
-  distanceConv.i = (myi2c.instruction[1]<<24) + (myi2c.instruction[2]<<16) + (myi2c.instruction[3]<<8) + (myi2c.instruction[4]);
-  angleConv.i = (myi2c.instruction[5]<<24) + (myi2c.instruction[6]<<16) + (myi2c.instruction[7]<<8) + (myi2c.instruction[8]);
+  distanceConv.i = ((unsigned long)myi2c.instruction[1]<<24) + ((unsigned long)myi2c.instruction[2]<<16) + ((unsigned long)myi2c.instruction[3]<<8) + ((unsigned long)myi2c.instruction[4]);
+  angleConv.i = ((unsigned long)myi2c.instruction[5]<<24) + ((unsigned long)myi2c.instruction[6]<<16) + ((unsigned long)myi2c.instruction[7]<<8) + ((unsigned long)myi2c.instruction[8]);
+  //Serial.println(distanceConv.i);
   myi2c.distance = distanceConv.f;
   myi2c.angle = angleConv.f;
+  //Serial.println(myi2c.distance);
+  //Serial.println((unsigned long)((myi2c.instruction[1]<<24) + (myi2c.instruction[2]<<16) + (myi2c.instruction[3]<<8) + (myi2c.instruction[4])));
   myi2c.color = myi2c.instruction[0];
   if (myi2c.instruction[0] == 0) {
     myi2c.marker = false;

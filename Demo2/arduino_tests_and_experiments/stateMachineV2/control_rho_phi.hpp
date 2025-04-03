@@ -201,8 +201,8 @@ void controlRhoPhi(float rhoSetInches, float phiSetDegrees){
 }
 
 bool inTolerance(){
-  float deltaPhi = 0.1*PI/180;
-  float deltaRho = .005;
+  float deltaPhi = 1*PI/180;
+  float deltaRho = .05;
   if(((phi <= phiSet + deltaPhi) && (phi >= phiSet - deltaPhi)) && ((rho <= rhoSet + deltaRho) && (rho >= rhoSet - deltaRho))){
     return true;
   }

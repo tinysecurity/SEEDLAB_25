@@ -9,7 +9,7 @@
 #ColorCam is the name of the copy of the Camera.py script 
 #Its the same essential thing, but that way I can make changes without issue
 
-from ColorCam import Camera
+from ColorCamRefined import Camera
 import cv2
 from cv2 import aruco
 from time import sleep
@@ -31,7 +31,7 @@ tempI2CArray = [10000,10000,10000,10000] #[markerFound, arrowColor, angle, lengt
 #calling Camera class
 cam = Camera(0)
 
-#initializing queue
+#initializing queue for LCD screen
 q = queue.Queue()
 
 #I2C address of the Arduino, set in Arduino sketch
@@ -68,18 +68,28 @@ def handleLCD():
                 lcd.message = "Angle: " + str(gotSomething) #printing angle on LCD
             sleep(0.0005)
 
+#def handleCam():
+    #while(True):
+        #if not q2.empty():
+            #gotSomething2 = q2.get() #get next item in queue
+            #cam.update()
+            #cam.show()
+
 myThread = threading.Thread(target=handleLCD,args=())
+#myThread2 = threading.Thread(target=handleCam,args=())
 myThread.start()
+#myThread2.start()
 
 while True:
     cam.update()
     cam.show()
-
+    #q2.put(1)
+    
     if len(cam.arucoDict) != 0: #if a marker is detected
         markers = "Markers Found"
         #print("Marker found")
         I2CArray[0] = 1 #set marker found to true
-        I2CArray[1] = cam.arucoDict[0]["arrowColor"]
+        tempI2CArray[1] = cam.arucoDict[0]["arrowColor"]
 
         if ((angle + 0.5 <= cam.arucoDict[0]["angle"]) or (angle - 0.5 >= cam.arucoDict[0]["angle"])):
             angle = round(cam.arucoDict[0]["angle"],2) #updates the angle variable if there was a change in angle
@@ -92,10 +102,11 @@ while True:
             markers = "Markers found"
             tempI2CArray[3] = lengthOf
 
-        if (tempI2CArray[2] != I2CArray[2]) or (tempI2CArray[3] != I2CArray[3]):
+        if (tempI2CArray[2] != I2CArray[2]) or (tempI2CArray[3] != I2CArray[3]) or (tempI2CArray[1] != I2CArray[1]):
             I2CArray[2] = tempI2CArray[2]
             I2CArray[3] = tempI2CArray[3]
-            #print(I2CArray)
+            I2CArray[1] = tempI2CArray[1]
+            print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
             CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)
 
@@ -108,6 +119,6 @@ while True:
             angle = 10000
             lengthOf = 10000
             I2CArray = [0,1,10000,10000]
-            #print(I2CArray)
+            print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
             CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)

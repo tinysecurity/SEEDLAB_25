@@ -6,6 +6,7 @@ import os
 import yaml
 import numpy as np
 import math
+import threading
 
 #read and open YAML file
 data = yaml.safe_load(open("JULIE4_calibration_matrix.yaml", "r"))
@@ -15,6 +16,12 @@ cameraMatrix = np.asarray(data['camera_matrix'])
 distCoeff = np.asarray(data['dist_coeff'])
 rvecs = np.asarray(data['rvecs'])
 tvecs = np.asarray(data['tvecs'])
+
+#setting color detection values
+#greenArrowCenters = np.empty((0,2))
+#greenArrowAreas = np.empty((0))
+#redArrowCenters = np.empty((0,2))
+#redArrowAreas = np.empty((0))
 
 
 
@@ -30,7 +37,7 @@ class Camera:
     #_DET_PARAMS.useAruco3Detection = True
     _REF_PARAMS = aruco.RefineParameters()
     DETECTOR = aruco.ArucoDetector(aruco.getPredefinedDictionary(aruco.DICT_6X6_50),_DET_PARAMS,_REF_PARAMS)
-
+    
 
     def __init__(self, cameraIndex):
         # camera startup
@@ -48,9 +55,10 @@ class Camera:
         self.image = self.camera.read()[1]
         h, w = self.image.shape[:2]
         self.newCameraMatrix = np.asarray(cv2.getOptimalNewCameraMatrix(cameraMatrix,distCoeff,(w,h),self.ALPHA,(w,h))[0])
+        self.arrowColor = 0
         # get starting vaues
         self.update()
-
+        
 
     def read(self):
         # read an image from the camera
@@ -58,7 +66,7 @@ class Camera:
         # make sure to only update if an image is captured
         if not returned:
             return
-
+        
         # undistort image
         temp_image = cv2.undistort(temp_image,self.cameraMatrix,self.distCoeff,None,self.newCameraMatrix)
 
@@ -74,72 +82,15 @@ class Camera:
 
 
     def update(self):
-        arrowColor = 0
+        #start threading for color detection
+        colorThread = threading.Thread(target=self.handleColorDetection,args=())
+        colorThread.start() #start threading
+        
         # read and postprocess frame
         temp_image = self.read()
 
         # search for and return any aruco markers
         corners = self.DETECTOR.detectMarkers(temp_image)[0]
-
-        imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
-
-
-        upperGreen = np.array([80, 211, 81])
-        lowerGreen = np.array([55, 89, 39])
-
-        #upperGreen = np.array([86, 211, 81])
-        #lowerGreen = np.array([60, 89, 39])
-
-        mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
-        kernel = np.ones((5,5),np.uint8)
-        closing = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
-        contoursGreen,_ = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(self.image,contoursGreen,-1,(255,0,0),3)
-
-        greenArrowCenters = np.empty((0,2))
-        greenArrowAreas = np.empty((0))
-
-        for index, cnt in enumerate(contoursGreen):
-            contour_area = cv2.contourArea(cnt)
-            if contour_area > 150:
-                x, y, w, h = cv2.boundingRect(cnt)
-                center = int(x+w/2),int(y+h/2)
-                greenArrowAreas = np.append(greenArrowAreas,contour_area)
-                greenArrowCenters = np.vstack((greenArrowCenters,center))
-                cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,255,0),2)
-                #cv2.putText(self.image, 'Green',(x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
-                cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
-                    
-        
-        upperRed = np.array([179, 224, 193])
-        lowerRed = np.array([140, 180, 75])
-        mask2 = cv2.inRange(imgHSV,lowerRed,upperRed)
-        kernel2 = np.ones((5,5),np.uint8)
-        closing2 = cv2.morphologyEx(mask2,cv2.MORPH_CLOSE,kernel2) 
-        contoursRed,_ = cv2.findContours(closing2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        #cv2.drawContours(self.image,contoursRed,-1,(255,0,0),3)
-
-        redArrowCenters = np.empty((0,2))
-        redArrowAreas = np.empty((0))
-
-        for index, cnt in enumerate(contoursRed):
-            contour_area = cv2.contourArea(cnt)
-            if contour_area > 150:
-                x, y, w, h = cv2.boundingRect(cnt)
-                center = int(x+w/2),int(y+h/2)
-                redArrowAreas = np.append(redArrowAreas,contour_area)
-                redArrowCenters = np.vstack((redArrowCenters,center))
-                cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,0,255),2)
-                #cv2.putText(self.image, 'Green',(x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
-                cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
-
-        
-        
-        #cv2.imshow("Contours",contourRedVisualize
-        #dst = cv2.addWeighted(self.image, 1, contourRedVisualize, 1,0)
-        #self.image = dst
-        #dst2 = cv2.addWeighted(self.image,1,contourGreenVisualize,1,0)
-        #self.image = dst2
         
         # update all information
         self.arucoDict.clear()
@@ -169,25 +120,10 @@ class Camera:
                 if centerX > 320: # make sure left of camera is positive
                     angle = -1*angle
 
-                #find the arrow that is associated with the right marker
-                if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
-                    #print("No arrows found")
-                    arrowColor = 1
-                elif len(redArrowAreas) == 0:
-                    #print("Green Arrow Found, No red")
-                    arrowColor = 2
-                elif len(greenArrowAreas) == 0:
-                    #print("Red Arrow Found, No green")
-                    arrowColor = 3
-                elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
-                    #print("Green Arrow Closest")
-                    arrowColor = 2
-                elif np.max(greenArrowAreas) < np.max(redArrowAreas):
-                    #print("Red Arrow Closest")
-                    arrowColor = 3
+                #arrowColor = 0
 
-
-
+                #colorThread.join() #join threading back up with this part of the code so we cant define dictionary
+                #print(self.arrowColor)
                     
                 # define dictionary values
                 # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
@@ -201,7 +137,7 @@ class Camera:
                     "angle":angle,
                     "rvec":rvec,
                     "tvec":tvec,
-                    "arrowColor":arrowColor}
+                    "arrowColor":self.arrowColor}
                 self.arucoDict.append(thisDict)
                 # set closestDict based on the closest marker
                 if distance < shortestDistance or shortestDistance == -1:
@@ -227,4 +163,84 @@ class Camera:
         # wait for q to quit python instance
         if cv2.waitKey(33) == ord('q'):
             quit()
+
+    def handleColorDetection(self):
+        arrowColor = 0
+        temp_image = self.read()
+        imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
+        
+        upperGreen = np.array([90, 255, 90])
+        lowerGreen = np.array([40, 50, 39])
+
+        #upperGreen = np.array([86, 211, 81])
+        #lowerGreen = np.array([60, 89, 39])
+
+        mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
+        kernel = np.ones((5,5),np.uint8)
+        closing = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
+        contoursGreen,_ = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        #cv2.drawContours(self.image,contoursGreen,-1,(255,0,0),3)
+
+        greenArrowCenters = np.empty((0,2))
+        greenArrowAreas = np.empty((0))
+
+        for index, cnt in enumerate(contoursGreen):
+            contour_area = cv2.contourArea(cnt)
+            if contour_area > 100:
+                x, y, w, h = cv2.boundingRect(cnt)
+                center = int(x+w/2),int(y+h/2)
+                greenArrowAreas = np.append(greenArrowAreas,contour_area)
+                greenArrowCenters = np.vstack((greenArrowCenters,center))
+                cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,255,0),2)
+                cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
+                    
+        
+        upperRed = np.array([179, 255, 255])
+        lowerRed = np.array([140, 160, 60])
+        
+        mask2 = cv2.inRange(imgHSV,lowerRed,upperRed)
+        kernel2 = np.ones((5,5),np.uint8)
+        closing2 = cv2.morphologyEx(mask2,cv2.MORPH_CLOSE,kernel2) 
+        contoursRed,_ = cv2.findContours(closing2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        #cv2.drawContours(self.image,contoursRed,-1,(255,0,0),3)
+
+        redArrowCenters = np.empty((0,2))
+        redArrowAreas = np.empty((0))
+
+        for index, cnt in enumerate(contoursRed):
+            contour_area = cv2.contourArea(cnt)
+            if contour_area > 100:
+                x, y, w, h = cv2.boundingRect(cnt)
+                center = int(x+w/2),int(y+h/2)
+                redArrowAreas = np.append(redArrowAreas,contour_area)
+                redArrowCenters = np.vstack((redArrowCenters,center))
+                cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,0,255),2)
+                cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
+
+        
+        
+        #cv2.imshow("Contours",contourRedVisualize
+        #dst = cv2.addWeighted(self.image, 1, contourRedVisualize, 1,0)
+        #self.image = dst
+        #dst2 = cv2.addWeighted(self.image,1,contourGreenVisualize,1,0)
+        #self.image = dst2
+
+        #find the arrow that is associated with the right marker
+        if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
+            #print("No arrows found")
+            self.arrowColor = 1
+        elif len(redArrowAreas) == 0:
+            #print("Green Arrow Found, No red")
+            self.arrowColor = 2
+        elif len(greenArrowAreas) == 0:
+            #print("Red Arrow Found, No green")
+            self.arrowColor = 3
+        elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
+            #print("Green Arrow Closest")
+            self.arrowColor = 2
+        elif np.max(greenArrowAreas) < np.max(redArrowAreas):
+            #print("Red Arrow Closest")
+            self.arrowColor = 3
+        
+        
         
