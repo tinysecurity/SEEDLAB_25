@@ -74,21 +74,66 @@ class Camera:
 
 
     def update(self):
-        arrowColor = 0
         # read and postprocess frame
         temp_image = self.read()
-
+        
         # search for and return any aruco markers
         corners = self.DETECTOR.detectMarkers(temp_image)[0]
 
-        imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
+        # update all information
+        self.arucoDict.clear()
+        self.closestDict.clear()
+        shortestDistance = -1
+        if corners:
+            for marker in corners:
+                marker = marker[0] # remove extra vector layer
+                centerX = int((marker[0].item(0) + marker[1].item(0) + marker[2].item(0) + marker[3].item(0))/4) #find average coord for X
+                centerY = int((marker[0].item(1) + marker[1].item(1) + marker[2].item(1) + marker[3].item(1))/4) #find average coord for Y
+                a = 5/(2.54*2) # finding the side lengths of aruco marker with origin at center of marker
+                objectPoints = np.array([[-a,a,0],[a, a, 0],[a, -a,0],[-a,-a,0]])
+                # finding tvec and rvec for each marker
+                ret, rvec, tvec = cv2.solvePnP(objectPoints, np.asarray(marker),self.newCameraMatrix, self.distCoeff)
+                distance = np.linalg.norm(tvec)
+                realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([centerX,centerY,1.0])
+                cameraVec = (np.linalg.inv(self.cameraMatrix)).dot([320,240,1.0])
+                #angle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
+                #R,_ = cv2.Rodrigues(rvec)
+                #angle = np.rad2deg(math.atan2(-1*R[2][0],math.sqrt(math.pow(R[2][1],2)+math.pow(R[2][2],2))))
+                
+                #angle = atan((centerX - cx)/fx)
+                # using trigonometry to calculate the angle to aruco marker, given x and z components of tvec
+                angle = abs(np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
+                
+                
+                if centerX > 320: # make sure left of camera is positive
+                    angle = -1*angle
+              
+                # define dictionary values
+                # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
+                # distance: "unsigned" scalar distance value
+                # angle: signed scalar angle value
+                # tvec and rvec: raw values, as returned from solvePnP
+                # arrowColor: the color of the arrow that is closest 
+                thisDict = {
+                    "corners":marker,
+                    "distance":distance,
+                    "angle":angle,
+                    "rvec":rvec,
+                    "tvec":tvec,
+                    "arrowColor":arrowColor}
+                self.arucoDict.append(thisDict)
+                # set closestDict based on the closest marker
+                if distance < shortestDistance or shortestDistance == -1:
+                    shortestDistance = distance
+                    self.closestDict = thisDict
 
-
+        #crop image based on marker location
+        cropImage = temp_image[ self.closestDict[0]["corners"][0][1] - 100:self.closestDict[0]["corners"][2][1] + 100, self.closestDict[0]["corners"][0][0] - 100:self.closestDict[0]["corners"][2][0] + 100 ] #coords for the top left corner and bottom right corner
+        
+        imgHSV = cv2.cvtColor(cropImage,cv2.COLOR_BGR2HSV)
+        
         upperGreen = np.array([80, 211, 81])
         lowerGreen = np.array([55, 89, 39])
-
-        #upperGreen = np.array([86, 211, 81])
-        #lowerGreen = np.array([60, 89, 39])
 
         mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
         kernel = np.ones((5,5),np.uint8)
@@ -133,84 +178,25 @@ class Camera:
                 #cv2.putText(self.image, 'Green',(x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
                 cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
 
-        
-        
-        #cv2.imshow("Contours",contourRedVisualize
-        #dst = cv2.addWeighted(self.image, 1, contourRedVisualize, 1,0)
-        #self.image = dst
-        #dst2 = cv2.addWeighted(self.image,1,contourGreenVisualize,1,0)
-        #self.image = dst2
-        
-        # update all information
-        self.arucoDict.clear()
-        self.closestDict.clear()
-        shortestDistance = -1
-        if corners:
-            for marker in corners:
-                marker = marker[0] # remove extra vector layer
-                centerX = int((marker[0].item(0) + marker[1].item(0) + marker[2].item(0) + marker[3].item(0))/4) #find average coord for X
-                centerY = int((marker[0].item(1) + marker[1].item(1) + marker[2].item(1) + marker[3].item(1))/4) #find average coord for Y
-                a = 5/(2.54*2) # finding the side lengths of aruco marker with origin at center of marker
-                objectPoints = np.array([[-a,a,0],[a, a, 0],[a, -a,0],[-a,-a,0]])
-                # finding tvec and rvec for each marker
-                ret, rvec, tvec = cv2.solvePnP(objectPoints, np.asarray(marker),self.newCameraMatrix, self.distCoeff)
-                distance = np.linalg.norm(tvec)
-                realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([centerX,centerY,1.0])
-                cameraVec = (np.linalg.inv(self.cameraMatrix)).dot([320,240,1.0])
-                #angle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
-                #R,_ = cv2.Rodrigues(rvec)
-                #angle = np.rad2deg(math.atan2(-1*R[2][0],math.sqrt(math.pow(R[2][1],2)+math.pow(R[2][2],2))))
-                
-                #angle = atan((centerX - cx)/fx)
-                # using trigonometry to calculate the angle to aruco marker, given x and z components of tvec
-                angle = abs(np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
-                
-                
-                if centerX > 320: # make sure left of camera is positive
-                    angle = -1*angle
-
-                #find the arrow that is associated with the right marker
-                if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
-                    #print("No arrows found")
-                    arrowColor = 1
-                elif len(redArrowAreas) == 0:
-                    #print("Green Arrow Found, No red")
-                    arrowColor = 2
-                elif len(greenArrowAreas) == 0:
-                    #print("Red Arrow Found, No green")
-                    arrowColor = 3
-                elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
-                    #print("Green Arrow Closest")
-                    arrowColor = 2
-                elif np.max(greenArrowAreas) < np.max(redArrowAreas):
-                    #print("Red Arrow Closest")
-                    arrowColor = 3
-
-
-
-                    
-                # define dictionary values
-                # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
-                # distance: "unsigned" scalar distance value
-                # angle: signed scalar angle value
-                # tvec and rvec: raw values, as returned from solvePnP
-                # arrowColor: the color of the arrow that is closest 
-                thisDict = {
-                    "corners":marker,
-                    "distance":distance,
-                    "angle":angle,
-                    "rvec":rvec,
-                    "tvec":tvec,
-                    "arrowColor":arrowColor}
-                self.arucoDict.append(thisDict)
-                # set closestDict based on the closest marker
-                if distance < shortestDistance or shortestDistance == -1:
-                    shortestDistance = distance
-                    self.closestDict = thisDict
-
-
-                
-
+         #find the arrow that is associated with the right marker
+        if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
+            #print("No arrows found")
+            arrowColor = 1
+        elif len(redArrowAreas) == 0:
+            #print("Green Arrow Found, No red")
+            arrowColor = 2
+        elif len(greenArrowAreas) == 0:
+            #print("Red Arrow Found, No green")
+            arrowColor = 3
+        elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
+            #print("Green Arrow Closest")
+            arrowColor = 2
+        elif np.max(greenArrowAreas) < np.max(redArrowAreas):
+            #print("Red Arrow Closest")
+            arrowColor = 3
+            
+        #assign arrow color based on detection
+        self.closestDict[0]["arrowColor"] = arrowColor
 
     def show(self):
         # showing image w/ user modifications to frame
