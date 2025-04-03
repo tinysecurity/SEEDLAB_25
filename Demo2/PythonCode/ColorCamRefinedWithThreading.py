@@ -165,82 +165,78 @@ class Camera:
             quit()
 
     def handleColorDetection(self):
-        arrowColor = 0
-        temp_image = self.read()
-        imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
+        if len(self.closestDict) != 0: #if a marker is detected
+            #arrowColor = 0
+            temp_image = self.read()
+             #crop image based on marker location
+            cropImage = temp_image[ self.closestDict[0]["corners"][0][1] - 100:self.closestDict[0]["corners"][2][1] + 100, self.closestDict[0]["corners"][0][0] - 100:self.closestDict[0]["corners"][2][0] + 100 ] #coords for the top left corner and bottom right corner
+            imgHSV = cv2.cvtColor(cropImage,cv2.COLOR_BGR2HSV)
         
-        upperGreen = np.array([90, 255, 90])
-        lowerGreen = np.array([40, 50, 39])
+            upperGreen = np.array([90, 255, 90])
+            lowerGreen = np.array([40, 50, 39])
 
-        #upperGreen = np.array([86, 211, 81])
-        #lowerGreen = np.array([60, 89, 39])
+            mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
+            kernel = np.ones((5,5),np.uint8)
+            closing = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
+            contoursGreen,_ = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            #cv2.drawContours(self.image,contoursGreen,-1,(255,0,0),3)
 
-        mask = cv2.inRange(imgHSV,lowerGreen,upperGreen)
-        kernel = np.ones((5,5),np.uint8)
-        closing = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
-        contoursGreen,_ = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        #cv2.drawContours(self.image,contoursGreen,-1,(255,0,0),3)
+            greenArrowCenters = np.empty((0,2))
+            greenArrowAreas = np.empty((0))
 
-        greenArrowCenters = np.empty((0,2))
-        greenArrowAreas = np.empty((0))
-
-        for index, cnt in enumerate(contoursGreen):
-            contour_area = cv2.contourArea(cnt)
-            if contour_area > 100:
-                x, y, w, h = cv2.boundingRect(cnt)
-                center = int(x+w/2),int(y+h/2)
-                greenArrowAreas = np.append(greenArrowAreas,contour_area)
-                greenArrowCenters = np.vstack((greenArrowCenters,center))
-                cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,255,0),2)
-                cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
+            for index, cnt in enumerate(contoursGreen):
+                contour_area = cv2.contourArea(cnt)
+                if contour_area > 100:
+                    x, y, w, h = cv2.boundingRect(cnt)
+                    center = int(x+w/2),int(y+h/2)
+                    greenArrowAreas = np.append(greenArrowAreas,contour_area)
+                    greenArrowCenters = np.vstack((greenArrowCenters,center))
+                    cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,255,0),2)
+                    cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
                     
         
-        upperRed = np.array([179, 255, 255])
-        lowerRed = np.array([140, 160, 60])
+            upperRed = np.array([179, 255, 255])
+            lowerRed = np.array([140, 160, 60])
         
-        mask2 = cv2.inRange(imgHSV,lowerRed,upperRed)
-        kernel2 = np.ones((5,5),np.uint8)
-        closing2 = cv2.morphologyEx(mask2,cv2.MORPH_CLOSE,kernel2) 
-        contoursRed,_ = cv2.findContours(closing2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        #cv2.drawContours(self.image,contoursRed,-1,(255,0,0),3)
+            mask2 = cv2.inRange(imgHSV,lowerRed,upperRed)
+            kernel2 = np.ones((5,5),np.uint8)
+            closing2 = cv2.morphologyEx(mask2,cv2.MORPH_CLOSE,kernel2) 
+            contoursRed,_ = cv2.findContours(closing2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            #cv2.drawContours(self.image,contoursRed,-1,(255,0,0),3)
 
-        redArrowCenters = np.empty((0,2))
-        redArrowAreas = np.empty((0))
+            redArrowCenters = np.empty((0,2))
+            redArrowAreas = np.empty((0))
 
-        for index, cnt in enumerate(contoursRed):
-            contour_area = cv2.contourArea(cnt)
-            if contour_area > 100:
-                x, y, w, h = cv2.boundingRect(cnt)
-                center = int(x+w/2),int(y+h/2)
-                redArrowAreas = np.append(redArrowAreas,contour_area)
-                redArrowCenters = np.vstack((redArrowCenters,center))
-                cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,0,255),2)
-                cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
+            for index, cnt in enumerate(contoursRed):
+                contour_area = cv2.contourArea(cnt)
+                if contour_area > 100:
+                    x, y, w, h = cv2.boundingRect(cnt)
+                    center = int(x+w/2),int(y+h/2)
+                    redArrowAreas = np.append(redArrowAreas,contour_area)
+                    redArrowCenters = np.vstack((redArrowCenters,center))
+                    cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,0,255),2)
+                    cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
 
         
-        
-        #cv2.imshow("Contours",contourRedVisualize
-        #dst = cv2.addWeighted(self.image, 1, contourRedVisualize, 1,0)
-        #self.image = dst
-        #dst2 = cv2.addWeighted(self.image,1,contourGreenVisualize,1,0)
-        #self.image = dst2
 
-        #find the arrow that is associated with the right marker
-        if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
-            #print("No arrows found")
-            self.arrowColor = 1
-        elif len(redArrowAreas) == 0:
-            #print("Green Arrow Found, No red")
-            self.arrowColor = 2
-        elif len(greenArrowAreas) == 0:
-            #print("Red Arrow Found, No green")
-            self.arrowColor = 3
-        elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
-            #print("Green Arrow Closest")
-            self.arrowColor = 2
-        elif np.max(greenArrowAreas) < np.max(redArrowAreas):
-            #print("Red Arrow Closest")
-            self.arrowColor = 3
-        
+            #find the arrow that is associated with the right marker
+            if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
+                #print("No arrows found")
+                self.arrowColor = 1
+            elif len(redArrowAreas) == 0:
+                #print("Green Arrow Found, No red")
+                self.arrowColor = 2
+            elif len(greenArrowAreas) == 0:
+                #print("Red Arrow Found, No green")
+                self.arrowColor = 3
+            elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
+                #print("Green Arrow Closest")
+                self.arrowColor = 2
+            elif np.max(greenArrowAreas) < np.max(redArrowAreas):
+                #print("Red Arrow Closest")
+                self.arrowColor = 3
+
+            #assign arrow color based on detection
+            self.closestDict[0]["arrowColor"] = self.arrowColor
         
         
