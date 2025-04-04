@@ -116,7 +116,7 @@ class Camera:
                 
                 #angle = atan((centerX - cx)/fx)
                 # using trigonometry to calculate the angle to aruco marker, given x and z components of tvec
-                angle = abs(np.rad2deg(math.atan((self.centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
+                angle = abs(np.rad2deg(math.atan((self.centerX-self.cameraMatrix[0][2])/self.cameraMatrix[0][0])))
                 
                 
                 if self.centerX > 320: # make sure left of camera is positive
@@ -235,6 +235,6 @@ class Camera:
 
                 
             #assign arrow color based on detection
-            self.closestDict["arrowColor"] = self.arrowColor
+            #self.closestDict.update({"arrowColor": self.arrowColor})
         
         

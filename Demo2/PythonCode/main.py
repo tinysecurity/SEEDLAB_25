@@ -9,7 +9,7 @@
 #ColorCam is the name of the copy of the Camera.py script 
 #Its the same essential thing, but that way I can make changes without issue
 
-from ColorCamRefined import Camera
+from ColorCamRefinedWithThreading import Camera
 import cv2
 from cv2 import aruco
 from time import sleep
@@ -108,6 +108,7 @@ while True:
             I2CArray[1] = tempI2CArray[1]
             print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
+            print(cam.closestDict)
             CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)
 
     if len(cam.arucoDict) == 0: #if no markers are detected
@@ -120,5 +121,4 @@ while True:
             lengthOf = 10000
             I2CArray = [0,1,10000,10000]
             print(I2CArray)
-            #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
             CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)
