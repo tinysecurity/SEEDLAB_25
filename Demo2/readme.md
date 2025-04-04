@@ -17,9 +17,19 @@ PythonCode
    
 
 arduinoCode
-	This is the folder where all code for the functional operation of the arduino will be stored.
-	As files are added and modified, we will add detail here as to what is updated.
 
-	ADD README DETAILS
+    demo2_arduino folder:
+	    This folder contains test code for our I2C communication with the Pi
+    
+    arduino_tests_and_experiments folder:
+        This folder contains the different iteration of our main Arduino code.
+        
+        
+	bignus_free_time: 
+	    This folder contains code that we wrote for fun to test our control system for the robot. This code drives the robot in a square so we can test how accurate the driving is after a prolonged period of time. 
+	    
+	stateMachine:
+	    This folder contains the Arduino code for our first iteration of the state machine for our control side of the project.
 	
-	ADD README DETAILS
+	stateMachineV2:
+	    This folder is the second and final iteration of our Arduino code. Our code utilizes a state machine to navigate around its environment. We receive bytes from the Pi and translate these into different states that our code can understand. 
