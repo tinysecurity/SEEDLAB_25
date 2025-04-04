@@ -51,7 +51,7 @@ typedef enum {
   BINGUS, READ_INST, LOOK, WAIT, TURN, DRIVE, ADJUST, ARROW, REPORT, RESET
 } bingusState_t;
 
-static bingusState_t bingusState = BINGUS;
+static bingusState_t bingusState = WAIT;
 
 // State control variables
 bool atMarker;
@@ -92,8 +92,6 @@ void loop() {
         markerDistance = myi2c.distance;
         markerAngle = myi2c.angle;
         markerFound = myi2c.marker;
-        if(markerDistance <= 18) atMarker = true;
-        else if(markerDistance > 18) atMarker = false;
         color = myi2c.color;
         switch(color){
           case 0:
@@ -116,7 +114,7 @@ void loop() {
       }
 
       // ------------------ Change State -----------------------------
-      if(!markerFound) bingusState = LOOK;
+      if(!markerFound & !arrowFound) bingusState = LOOK;
       else if(markerFound && !atMarker) bingusState = TURN;
       else if(atMarker && !adjusted) bingusState = ADJUST;
       else if(atMarker && adjusted && arrowFound) bingusState = ARROW;

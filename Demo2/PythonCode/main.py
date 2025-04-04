@@ -82,7 +82,7 @@ myThread.start()
 
 while True:
     cam.update()
-    cam.show()
+    #cam.show()
     #q2.put(1)
     
     if len(cam.arucoDict) != 0: #if a marker is detected
@@ -108,7 +108,7 @@ while True:
             I2CArray[1] = tempI2CArray[1]
             print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
-            print(cam.closestDict)
+            #print(cam.closestDict)
             CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)
 
     if len(cam.arucoDict) == 0: #if no markers are detected
