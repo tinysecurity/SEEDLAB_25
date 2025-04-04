@@ -9,7 +9,7 @@
 #ColorCam is the name of the copy of the Camera.py script 
 #Its the same essential thing, but that way I can make changes without issue
 
-from ColorCamRefined import Camera
+from ColorCamRefinedWithThreading import Camera
 import cv2
 from cv2 import aruco
 from time import sleep
@@ -76,9 +76,7 @@ def handleLCD():
             #cam.show()
 
 myThread = threading.Thread(target=handleLCD,args=())
-#myThread2 = threading.Thread(target=handleCam,args=())
 myThread.start()
-#myThread2.start()
 
 while True:
     cam.update()
@@ -89,16 +87,16 @@ while True:
         markers = "Markers Found"
         #print("Marker found")
         I2CArray[0] = 1 #set marker found to true
-        tempI2CArray[1] = cam.closestDict[0]["arrowColor"]
+        tempI2CArray[1] = cam.closestDict["arrowColor"]
 
-        if ((angle + 0.5 <= cam.closestDict[0]["angle"]) or (angle - 0.5 >= cam.closestDict[0]["angle"])):
-            angle = round(cam.closestDict[0]["angle"],2) #updates the angle variable if there was a change in angle
+        if ((angle + 0.5 <= cam.closestDict["angle"]) or (angle - 0.5 >= cam.closestDict["angle"])):
+            angle = round(cam.closestDict["angle"],2) #updates the angle variable if there was a change in angle
             q.put(angle) #puts angle into queue to be displayed on LCD
             markers = "Markers found"
             tempI2CArray[2] = angle
 
-        if ((lengthOf + 0.5 <= cam.closestDict[0]["distance"]) or (lengthOf - 0.5 >= cam.closestDict[0]["distance"])):
-            lengthOf = round(cam.closestDict[0]["distance"],2) #updates the distance variable if there was a change in distance
+        if ((lengthOf + 0.5 <= cam.closestDict["distance"]) or (lengthOf - 0.5 >= cam.closestDict["distance"])):
+            lengthOf = round(cam.closestDict["distance"],2) #updates the distance variable if there was a change in distance
             markers = "Markers found"
             tempI2CArray[3] = lengthOf
 

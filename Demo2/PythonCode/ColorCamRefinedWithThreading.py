@@ -56,6 +56,8 @@ class Camera:
         h, w = self.image.shape[:2]
         self.newCameraMatrix = np.asarray(cv2.getOptimalNewCameraMatrix(cameraMatrix,distCoeff,(w,h),self.ALPHA,(w,h))[0])
         self.arrowColor = 0
+        self.centerX = 10000
+        self.centerY = 10000
         # get starting vaues
         self.update()
         
@@ -99,14 +101,14 @@ class Camera:
         if corners:
             for marker in corners:
                 marker = marker[0] # remove extra vector layer
-                centerX = int((marker[0].item(0) + marker[1].item(0) + marker[2].item(0) + marker[3].item(0))/4) #find average coord for X
-                centerY = int((marker[0].item(1) + marker[1].item(1) + marker[2].item(1) + marker[3].item(1))/4) #find average coord for Y
+                self.centerX = int((marker[0].item(0) + marker[1].item(0) + marker[2].item(0) + marker[3].item(0))/4) #find average coord for X
+                self.centerY = int((marker[0].item(1) + marker[1].item(1) + marker[2].item(1) + marker[3].item(1))/4) #find average coord for Y
                 a = 5/(2.54*2) # finding the side lengths of aruco marker with origin at center of marker
                 objectPoints = np.array([[-a,a,0],[a, a, 0],[a, -a,0],[-a,-a,0]])
                 # finding tvec and rvec for each marker
                 ret, rvec, tvec = cv2.solvePnP(objectPoints, np.asarray(marker),self.newCameraMatrix, self.distCoeff)
                 distance = np.linalg.norm(tvec)
-                realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([centerX,centerY,1.0])
+                realMarkerVec = (np.linalg.inv(self.cameraMatrix)).dot([self.centerX,self.centerY,1.0])
                 cameraVec = (np.linalg.inv(self.cameraMatrix)).dot([320,240,1.0])
                 #angle = np.rad2deg(np.arccos(realMarkerVec.dot(cameraVec)/(np.linalg.norm(realMarkerVec)*(np.linalg.norm(cameraVec)))))
                 #R,_ = cv2.Rodrigues(rvec)
@@ -114,16 +116,11 @@ class Camera:
                 
                 #angle = atan((centerX - cx)/fx)
                 # using trigonometry to calculate the angle to aruco marker, given x and z components of tvec
-                angle = abs(np.rad2deg(math.atan((centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
+                angle = abs(np.rad2deg(math.atan((self.centerX-self.cameraMatrix[0][2])/cameraMatrix[0][0])))
                 
                 
-                if centerX > 320: # make sure left of camera is positive
+                if self.centerX > 320: # make sure left of camera is positive
                     angle = -1*angle
-
-                #arrowColor = 0
-
-                #colorThread.join() #join threading back up with this part of the code so we cant define dictionary
-                #print(self.arrowColor)
                     
                 # define dictionary values
                 # corners: 4x2 array of marker corners, i.e. [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
@@ -168,9 +165,7 @@ class Camera:
         if len(self.closestDict) != 0: #if a marker is detected
             #arrowColor = 0
             temp_image = self.read()
-             #crop image based on marker location
-            cropImage = temp_image[ self.closestDict[0]["corners"][0][1] - 100:self.closestDict[0]["corners"][2][1] + 100, self.closestDict[0]["corners"][0][0] - 100:self.closestDict[0]["corners"][2][0] + 100 ] #coords for the top left corner and bottom right corner
-            imgHSV = cv2.cvtColor(cropImage,cv2.COLOR_BGR2HSV)
+            imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
         
             upperGreen = np.array([90, 255, 90])
             lowerGreen = np.array([40, 50, 39])
@@ -189,10 +184,12 @@ class Camera:
                 if contour_area > 100:
                     x, y, w, h = cv2.boundingRect(cnt)
                     center = int(x+w/2),int(y+h/2)
-                    greenArrowAreas = np.append(greenArrowAreas,contour_area)
-                    greenArrowCenters = np.vstack((greenArrowCenters,center))
-                    cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,255,0),2)
-                    cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
+                    cv2.rectangle(self.image, (self.centerX,self.centerY + 50), (self.centerX-200,self.centerY - 50), (0,255,0),2)
+                    if ((center[0] <  self.centerX) and (center[0] > self.centerX - 200)) and ((center[1] <  self.centerY + 50) and (center[1] > self.centerY - 50)):
+                        greenArrowAreas = np.append(greenArrowAreas,contour_area)
+                        greenArrowCenters = np.vstack((greenArrowCenters,center))
+                        cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,255,0),2)
+                        cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
                     
         
             upperRed = np.array([179, 255, 255])
@@ -212,13 +209,14 @@ class Camera:
                 if contour_area > 100:
                     x, y, w, h = cv2.boundingRect(cnt)
                     center = int(x+w/2),int(y+h/2)
-                    redArrowAreas = np.append(redArrowAreas,contour_area)
-                    redArrowCenters = np.vstack((redArrowCenters,center))
-                    cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,0,255),2)
-                    cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
+                    cv2.rectangle(self.image, (self.centerX,self.centerY + 50), (self.centerX+200,self.centerY - 50), (0,0,255),2)
+                    if ((center[0] >  self.centerX) and (center[0] < self.centerX + 200)) and ((center[1] <  self.centerY + 50) and (center[1] > self.centerY - 50)):
+                        redArrowAreas = np.append(redArrowAreas,contour_area)
+                        redArrowCenters = np.vstack((redArrowCenters,center))
+                        cv2.rectangle(self.image, (x,y), (x+w,y+h), (0,0,255),2)
+                        cv2.putText(self.image, '+', center, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
 
         
-
             #find the arrow that is associated with the right marker
             if len(greenArrowAreas) == 0 and len(redArrowAreas) == 0:
                 #print("No arrows found")
@@ -229,14 +227,14 @@ class Camera:
             elif len(greenArrowAreas) == 0:
                 #print("Red Arrow Found, No green")
                 self.arrowColor = 3
-            elif np.max(greenArrowAreas) >= np.max(redArrowAreas):
-                #print("Green Arrow Closest")
+            elif np.max(greenArrowAreas)>= np.max(redArrowAreas):
                 self.arrowColor = 2
             elif np.max(greenArrowAreas) < np.max(redArrowAreas):
-                #print("Red Arrow Closest")
                 self.arrowColor = 3
+            
 
+                
             #assign arrow color based on detection
-            self.closestDict[0]["arrowColor"] = self.arrowColor
+            self.closestDict["arrowColor"] = self.arrowColor
         
         

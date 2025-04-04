@@ -74,6 +74,7 @@ class Camera:
 
 
     def update(self):
+        arrowColor = 0
         # read and postprocess frame
         temp_image = self.read()
         
@@ -128,7 +129,7 @@ class Camera:
                     self.closestDict = thisDict
 
             #crop image based on marker location
-            cropImage = temp_image[ self.closestDict[0]["corners"][0][1] - 100:self.closestDict[0]["corners"][2][1] + 100, self.closestDict[0]["corners"][0][0] - 100:self.closestDict[0]["corners"][2][0] + 100 ] #coords for the top left corner and bottom right corner
+            cropImage = temp_image[ self.closestDict["corners"][0][1] - 100:self.closestDict["corners"][2][1] + 100, self.closestDict["corners"][0][0] - 100:self.closestDict["corners"][2][0] + 100 ] #coords for the top left corner and bottom right corner
         
             imgHSV = cv2.cvtColor(cropImage,cv2.COLOR_BGR2HSV)
         
