@@ -4,7 +4,7 @@ PythonCode
 	This is the folder where all code for the machine learning team goes for this demo.
 	We start with a base provided by the prior Demo1 and build on it by addding color and shape detection to detect the arrows
 
-	*Camera.py is the original object class developed to encapsulate the camera and its main objectives
+	*ColorCamRefinedWithThreading.py is the original object class developed to encapsulate the camera and its main objectives
  		Detect Aruco Marker
    		Detect Color
      		Format data for transmission over i2c
