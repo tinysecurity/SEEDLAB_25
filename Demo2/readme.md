@@ -17,20 +17,17 @@ PythonCode
    	*JULIE4_calibration_matrix.yaml - This file holds the data we collected from our camera calibration. This includes the camera matrix, the distance coefficients, rotation vector, and translation vector. It is the final file we used for camera calibration.
    
 
-arduinoCode
-
-    demo2_arduino folder:
-	    This folder contains test code for our I2C communication with the Pi
-    
+Arduino Code:
     arduino_tests_and_experiments folder:
         This folder contains the different iteration of our main Arduino code.
         
-        
-	bignus_free_time: 
-	    This folder contains code that we wrote for fun to test our control system for the robot. This code drives the robot in a square so we can test how accurate the driving is after a prolonged period of time. 
-	    
-	stateMachine:
-	    This folder contains the Arduino code for our first iteration of the state machine for our control side of the project.
-	
-	stateMachineV2:
+	   * bignus_free_time: 
+	        This folder contains code that we wrote for fun to test our control system for the robot. This code drives the robot in a square so we can test how accurate the driving is after a prolonged period of time. 
+	   * stateMachine:
+	        This folder contains the Arduino code for our first iteration of the state machine for our control side of the project.
+       * demo2_arduino:
+            This folder contains our test code for the I2C communication. We used this to test how we are getting inputs from the PI and reading those on the Arduino. 	
+
+
+	stateMachineV2 folder:
 	    This folder is the second and final iteration of our Arduino code. Our code utilizes a state machine to navigate around its environment. We receive bytes from the Pi and translate these into different states that our code can understand. 
