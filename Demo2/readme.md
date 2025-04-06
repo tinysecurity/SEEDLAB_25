@@ -14,6 +14,7 @@ PythonCode
 	*CustomI2C.py is the implementation or application of the custom transmission protocol object
  	*main.py - main is the primary driver code that implements both the Camera object and the CustomI2C encoding. 
   	We implemented threading to optimize for speed and responsiveness
+   	*JULIE4_calibration_matrix.yaml - This file holds the data we collected from our camera calibration. This includes the camera matrix, the distance coefficients, rotation vector, and translation vector. It is the final file we used for camera calibration.
    
 
 arduinoCode
