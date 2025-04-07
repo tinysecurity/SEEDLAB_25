@@ -44,11 +44,14 @@ float markerAngle;
 float markerDistance;
 bool arrowFound = false;
 bool arrowDirection = LEFT;
+int arrowCount = 0;
+int wiggleCount = 0;
+int wiggleDirection = LEFT;
 uint8_t color;
 
 // Set up state machine states
 typedef enum {
-  BINGUS, READ_INST, LOOK, WAIT, TURN, DRIVE, ADJUST, ARROW, REPORT, RESET
+  BINGUS, READ_INST, LOOK, WAIT, TURN, DRIVE, ADJUST, ARROW, WIGGLE, REPORT, RESET
 } bingusState_t;
 
 static bingusState_t bingusState = WAIT;
@@ -114,7 +117,8 @@ void loop() {
       }
 
       // ------------------ Change State -----------------------------
-      if(!markerFound & !arrowFound) bingusState = LOOK;
+      if(!markerFound & !arrowFound & arrowCount < 1) bingusState = LOOK;
+      else if(!markerFound & !arrowFound & arrowCount > 1) bingusState = WIGGLE;
       else if(markerFound && !atMarker) bingusState = TURN;
       else if(atMarker && !adjusted) bingusState = ADJUST;
       else if(atMarker && adjusted && arrowFound) bingusState = ARROW;
@@ -192,6 +196,32 @@ void loop() {
         bingusState = WAIT;
       }
       break; 
+
+    case WIGGLE:
+      switch(wiggleCount){
+        case 0:
+          wiggleDirection = arrowDirection;
+          break;
+        case 1:
+        case 2:
+          wiggleDirection = !arrowDirection;
+          break;
+        case 3:
+          wiggleDirection = arrowDirection;
+          break;
+      }
+      if(wiggleDirection) desiredAngle = -45;
+      else desiredAngle = 45;
+      controlRhoPhi(desiredDistance, desiredAngle);
+      
+      // ------------------ Change State -----------------------------
+      if(inTolerance()){
+        bingusState = WAIT;
+        wiggleCount = wiggleCount + 1;
+        if(wiggleCount > 3) wiggleCount = 0;
+        waitOffSet = millis();
+      }
+      break;
 
     case REPORT: // Report data back to the Pi
       // ------ Add code to report data back to the pi-------
