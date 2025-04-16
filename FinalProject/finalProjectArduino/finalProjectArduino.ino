@@ -118,7 +118,7 @@ void loop() {
 
       // ------------------ Change State -----------------------------
       if(!markerFound & !arrowFound & arrowCount < 1) bingusState = LOOK;
-      else if(!markerFound & !arrowFound & arrowCount > 1) bingusState = WIGGLE;
+      else if(!markerFound & !arrowFound & arrowCount >= 1) bingusState = WIGGLE;
       else if(markerFound && !atMarker) bingusState = TURN;
       else if(atMarker && !adjusted) bingusState = ADJUST;
       else if(atMarker && adjusted && arrowFound) bingusState = ARROW;
@@ -194,6 +194,7 @@ void loop() {
         adjusted = false;
         waitOffSet = millis();
         bingusState = WAIT;
+        arrowCount = arrowCount + 1;
       }
       break; 
 
