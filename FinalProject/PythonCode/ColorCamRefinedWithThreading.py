@@ -64,9 +64,9 @@ class Camera:
 
     def read(self):
         # read an image from the camera
-        returned, temp_image = self.camera.read()
+        self.returned, temp_image = self.camera.read()
         # make sure to only update if an image is captured
-        if not returned:
+        if not self.returned:
             return
         
         # undistort image
@@ -164,7 +164,7 @@ class Camera:
     def handleColorDetection(self):
         if len(self.closestDict) != 0: #if a marker is detected
             #arrowColor = 0
-            temp_image = self.read()
+            temp_image = self.image
             imgHSV = cv2.cvtColor(temp_image,cv2.COLOR_BGR2HSV)
         
             upperGreen = np.array([90, 255, 90])
