@@ -21,8 +21,8 @@ import threading
 import CustomI2C
 
 #starting and reset values
-angle = 10000
-lengthOf = 10000
+angle = 0
+lengthOf = 18
 markers = 'start'
 
 I2CArray = [10000,10000,10000,10000] #[markerFound, arrowColor, angle, length]
@@ -80,7 +80,7 @@ myThread.start()
 
 while True:
     cam.update()
-    cam.show()
+    #cam.show()
     #q2.put(1)
     
     if len(cam.closestDict) != 0: #if a marker is detected
@@ -114,9 +114,9 @@ while True:
             q.put(markers) #put no marker found message into queue
 
             #reset values
-            angle = 10000
-            lengthOf = 10000
-            I2CArray = [0,1,10000,10000]
+            angle = 0
+            lengthOf = 18
+            I2CArray = [0,1,0,18]
             print(I2CArray)
             #i2cArduino.write_block_data(ARD_ADDR,offset,I2CArray) #sends angle and distance to Arduino
             CustomI2C.sendMessage(cam.closestDict, 8, 4, 1)

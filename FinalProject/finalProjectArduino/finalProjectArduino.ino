@@ -60,7 +60,7 @@ static bingusState_t bingusState = WAIT;
 bool atMarker;
 bool adjusted;
 long int waitOffSet;
-long int waitTime = 1500; // In milliseconds
+long int waitTime = 900; // In milliseconds
 
 void setup() {
   Serial.begin(9600);
@@ -117,8 +117,8 @@ void loop() {
       }
 
       // ------------------ Change State -----------------------------
-      if(!markerFound & !arrowFound & arrowCount < 1) bingusState = LOOK;
-      else if(!markerFound & !arrowFound & arrowCount >= 1) bingusState = WIGGLE;
+      if(!markerFound && !arrowFound && arrowCount < 1 && !atMarker) bingusState = LOOK;
+      else if(!markerFound && !arrowFound && arrowCount >= 1 && !atMarker) bingusState = WIGGLE;
       else if(markerFound && !atMarker) bingusState = TURN;
       else if(atMarker && !adjusted) bingusState = ADJUST;
       else if(atMarker && adjusted && arrowFound) bingusState = ARROW;
@@ -165,7 +165,7 @@ void loop() {
       if(inTolerance()){
         atMarker = true;
         waitOffSet = millis();
-        bingusState = WAIT;
+        bingusState = REPORT; // CHANGE TO WAIT IF ERRORS
       }
       break;
 
