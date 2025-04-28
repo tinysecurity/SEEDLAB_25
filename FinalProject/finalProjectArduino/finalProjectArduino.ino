@@ -157,7 +157,7 @@ void loop() {
       break;
 
     case DRIVE: // --------- Second Step of moving toward the marker, drive until within 1.5 feet of the marker --------
-      desiredDistance = markerDistance - 18;
+      desiredDistance = markerDistance - 12;
       desiredAngle = markerAngle;
       controlRhoPhi(desiredDistance, desiredAngle);
       
