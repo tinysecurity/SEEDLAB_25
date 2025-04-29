@@ -15,8 +15,8 @@ ArucoMarkers, distances and angles
 Control Systems
 * The 2 main folders you will see in here is arduinoTestsAndExperiments/bingusFreeTime and finalProjectArduino
 * bingusFreeTime consists of bingusFreeTime.ino, control_rho_phi.hpp and encoder.hpp
-*     The purpose of Bingus Free Time is to reward Bingus for being a good robot and allow him time to roam the space
-*     bingusFreeTime.ino takes advantage of the control system we generated for our robot. Its purpose is to choose a random distance and direction and have Bingus just go in that direction. These values are bounded between 2 and 5 feet and 0 and I believe 20 degrees.
-*     Its very silly, but we like as a test of our sustem and to just play around becuse we made a silly robot and its fun
+*   The purpose of Bingus Free Time is to reward Bingus for being a good robot and allow him time to roam the space
+*   bingusFreeTime.ino takes advantage of the control system we generated for our robot. Its purpose is to choose a random distance and direction and have Bingus just go in that direction. These values are bounded between 2 and 5 feet and 0 and I believe 20 degrees.
+*   Its very silly, but we like as a test of our sustem and to just play around becuse we made a silly robot and its fun
 * finalProhectArduino is the full and final implementation of the control system. It was written to utilize our own encoder library and the written control system to have smooth and responsive action
-*     The finalProjectArduino.ino implements the finite state machine that uses system inputs, outputs and sensor data (aka comptuer vision information piped over via I2C) to allow Bingus to autonomously decide how to react to his environment. 
+*   The finalProjectArduino.ino implements the finite state machine that uses system inputs, outputs and sensor data (aka comptuer vision information piped over via I2C) to allow Bingus to autonomously decide how to react to his environment. 
